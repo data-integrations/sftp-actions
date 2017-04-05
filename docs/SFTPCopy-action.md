@@ -14,22 +14,23 @@ Usage Notes
 In order perform SFTP copy, we require host and port on which the SFTP server is running. SFTP implements secure file
 transfer over SSH. Typically port number 22 is used for SFTP(which is also default port for SSH). We also require valid
 credentials in the form of user name and password. Please make sure that you are able to SSH to the SFTP server using
-specified user and password. SSH connection to SFTP server might require some additional configurations such as to enable
-host key checking set 'StrictHostKeyChecking' to 'yes'. These additional configurations can be specified using
-`Properties for SSH` section.
+specified user and password. SSH connection to SFTP server can be customized by providing additional configurations
+such as enable host key checking by setting configuration property 'StrictHostKeyChecking' to 'yes'. These additional
+configurations can be specified using `Properties for SSH` section.
 
 Directory on the SFTP server which needs to be copied can be specified using `Source directory` property. The specified
 directory should exist and absolute path to the directory must be provided. If directory is empty then execution will
-continue without any error. `Destination directory` is the absolute path of the directory on HDFS where files need to be copied.
+continue without any error. `Destination directory` is the absolute path of the directory on HDFS where the files will be copied.
 If destination directory does not exists, then it will be created first. If file with the same name already exists in
 the destination directory, it will be overwritten.
 
-Files from the SFTP server can be optionally be uncompressed while copying to HDFS. Currently uncompress option is only supported
+Files from the SFTP server can optionally be uncompressed while copying to HDFS. Currently uncompress option is only supported
 for the zip files.
 
-Files on the SFTP server may required to be deleted, once they are processed. The comma separated list of file names on the
-SFTP server which were copied to HDFS in the current run are stored in a variable named `sftp.copied.file.names`.
-SFTP Delete action can be configured to run at the end of the pipeline, which uses this variable to delete the files on the SFTP server.
+Typically SFTP server acts as a temporary storage for the files and once processed the files can be deleted. Comma
+separated list of file names on the SFTP server which were copied to HDFS during the current run, is stored in a
+variable named `sftp.copied.file.names`. SFTP Delete action can be configured to run at the end of the pipeline,
+which uses this variable to determine the files to be deleted from SFTP server.
 
 Plugin Configuration
 --------------------
