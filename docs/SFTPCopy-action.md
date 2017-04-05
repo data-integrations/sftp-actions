@@ -5,20 +5,31 @@ SFTP Copy
 [![Build Status](https://travis-ci.org/hydrator/sftp-actions.svg?branch=develop)](https://travis-ci.org/hydrator/sftp-actions) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) <img src="https://cdap-users.herokuapp.com/assets/cdap-action.svg"/>
 
 
-CDAP Action plugin to copy files from the SFTP server to the specified destination.
+SFTP copy allows copying of the files from the specified directory on SFTP servers and write them to HDFS as the destination.
+The files that are copied can be optionally uncompressed before storing. The files are copied directly to HDFS without needing any additional staging area.
 
 
 Usage Notes
 -----------
-In a typical enterprise setting, it is common to have SFTP server which allows sharing of the files over network.
-Various individuals and applications can upload files to the SFTP server. Consumers of these files can download
-them from SFTP server for further processing. Once processed, the files on the SFTP server are no longer required
-and can be deleted.
+In order perform SFTP copy, we require host and port on which the SFTP server is running. SFTP implements secure file
+transfer over SSH. Typically port number 22 is used for SFTP(which is also default port for SSH). We also require valid
+credentials in the form of user name and password. Please make sure that you are able to SSH to the SFTP server using
+specified user and password. SSH connection to SFTP server might require some additional configurations such as to enable
+host key checking set 'StrictHostKeyChecking' to 'yes'. These additional configurations can be specified using
+`Properties for SSH` section.
 
-SFTP Copy plugin targets the use case where the files can be copied from SFTP server and stored on the desired
-destination such as `HDFS`. If files on the SFTP server are in compressed .zip format, then plugin can optionally
-un-compress them while copying.
+Directory on the SFTP server which needs to be copied can be specified using `Source directory` property. The specified
+directory should exist and absolute path to the directory must be provided. If directory is empty then execution will
+continue without any error. `Destination directory` is the absolute path of the directory on HDFS where files need to be copied.
+If destination directory does not exists, then it will be created first. If file with the same name already exists in
+the destination directory, it will be overwritten.
 
+Files from the SFTP server can be optionally be uncompressed while copying to HDFS. Currently uncompress option is only supported
+for the zip files.
+
+Files on the SFTP server may required to be deleted, once they are processed. The comma separated list of file names on the
+SFTP server which were copied to HDFS in the current run are stored in a variable named `sftp.copied.file.names`.
+SFTP Delete action can be configured to run at the end of the pipeline, which uses this variable to delete the files on the SFTP server.
 
 Plugin Configuration
 --------------------
@@ -31,7 +42,7 @@ Plugin Configuration
 | **Password** | **Y** | N/A | Specifies the password of the user.|
 | **Source Directory** | **Y** | N/A | Absolute path of the directory on the SFTP server which is to be copied. If the directory is empty, the execution of the plugin will be no-op.|
 | **Destination Directory** | **Y** | N/A | Destination directory on the file system, where files need to be copied. If directory does not exist, it will lbe created.|
-| **Extract zip files** | **N** | true | Boolean flag to determine whether to extract .zip files while copying.|
+| **Uncompress** | **N** | true | Boolean flag to determine whether to uncompress the `.zip` files while copying.|
 | **Variable name to hold list of copied file names** | **N** | sftp.copied.file.names | Name of the variable which holds comma separated list of file names on the SFTP server which were copied during this run of the plugin. Usually this variable is used as Macro in the SFTP Delete action to delete the files from SFTP server once their processing is successful. |
 | **Properties for SSH** | **N** | N/A | Specifies the properties that are used to configure SSH connection to the FTP server. For example to enable verbose logging add property 'LogLevel' with value 'VERBOSE'. To enable host key checking set 'StrictHostKeyChecking' to 'yes'. SSH can be configured with the properties described here 'https://linux.die.net/man/5/ssh_config'. |
 

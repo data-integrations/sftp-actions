@@ -42,9 +42,9 @@ applications or building plugins for appplications. You can expect questions fro
 users, release announcements, and any other discussions that we think will be helpful
 to the users.
 
-## IRC Channel
+## Slack Channel
 
-CDAP IRC Channel: #cdap on irc.freenode.net
+CDAP Slack Channel: http://cdap-users.herokuapp.com
 
 
 ## License and Trademarks

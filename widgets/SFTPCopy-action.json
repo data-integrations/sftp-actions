@@ -38,7 +38,7 @@
         },
         {
           "widget-type": "select",
-          "label": "Should extract zip while copying?",
+          "label": "Uncompress",
           "name": "extractZipFiles",
           "widget-attributes": {
             "values": [
