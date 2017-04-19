@@ -1,13 +1,13 @@
 SFTP Copy
 =========
 
-<a href="https://cdap-users.herokuapp.com/"><img alt="Join CDAP community" src="https://cdap-users.herokuapp.com/badge.svg?t=sftp-actions"/></a>
-[![Build Status](https://travis-ci.org/hydrator/sftp-actions.svg?branch=develop)](https://travis-ci.org/hydrator/sftp-actions) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) <img src="https://cdap-users.herokuapp.com/assets/cdap-action.svg"/>
-
+[![Join CDAP community](https://cdap-users.herokuapp.com/badge.svg?t=sftp-actions)](https://cdap-users.herokuapp.com)
+[![Build Status](https://travis-ci.org/hydrator/sftp-actions.svg?branch=develop)](https://travis-ci.org/hydrator/sftp-actions)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![CDAP Action](cdap-users.herokuapp.com/assets/cdap-action.svg)](http://docs.cask.co/cdap)
 
 SFTP copy allows copying of the files from the specified directory on SFTP servers and write them to HDFS as the destination.
 The files that are copied can be optionally uncompressed before storing. The files are copied directly to HDFS without needing any additional staging area.
-
 
 Usage Notes
 -----------
@@ -36,7 +36,7 @@ Plugin Configuration
 --------------------
 
 | Configuration | Required | Default | Description |
-| :------------ | :------: | :----- | :---------- |
+| :------------ | :------: | :------ | :---------- |
 | **Host** | **Y** | N/A | Specifies the host name of the SFTP server.|
 | **Port** | **N** | 22 | Specifies the port on which SFTP server is running.|
 | **User** | **Y** | N/A | Specifies the name of the user which will be used to connect to the SFTP server.|
@@ -69,7 +69,8 @@ For example, if your artifact is named 'sftp-actions-1.0.0':
 
     > load artifact target/sftp-actions-1.0.0.jar config-file target/sftp-actions-1.0.0.json
 
-## Mailing Lists
+Mailing Lists
+-------------
 
 CDAP User Group and Development Discussions:
 
@@ -80,12 +81,13 @@ applications or building plugins for appplications. You can expect questions fro
 users, release announcements, and any other discussions that we think will be helpful
 to the users.
 
-## Slack Channel
+Slack Channel
+-------------
 
-CDAP Slack Channel: http://cdap-users.herokuapp.com/
+CDAP Slack Channel: http://cdap-users.herokuapp.com
 
-
-## License and Trademarks
+License and Trademarks
+----------------------
 
 Copyright © 2017 Cask Data, Inc.
 

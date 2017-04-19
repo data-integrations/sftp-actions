@@ -1,9 +1,10 @@
 SFTP Actions
 ============
 
-
-<a href="https://cdap-users.herokuapp.com/"><img alt="Join CDAP community" src="https://cdap-users.herokuapp.com/badge.svg?t=sftp-actions"/></a>
-[![Build Status](https://travis-ci.org/hydrator/sftp-actions.svg?branch=develop)](https://travis-ci.org/hydrator/sftp-actions) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) <img src="https://cdap-users.herokuapp.com/assets/cdap-action.svg"/>
+[![Join CDAP community](https://cdap-users.herokuapp.com/badge.svg?t=sftp-actions)](https://cdap-users.herokuapp.com)
+[![Build Status](https://travis-ci.org/hydrator/sftp-actions.svg?branch=develop)](https://travis-ci.org/hydrator/sftp-actions)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![CDAP Action](cdap-users.herokuapp.com/assets/cdap-action.svg)](http://docs.cask.co/cdap)
 
 This repository contains CDAP Action plugins which can be used for performing SFTP operations.
 
@@ -12,6 +13,7 @@ This repository contains CDAP Action plugins which can be used for performing SF
 
 Build
 -----
+
 To build this plugin:
 
 ```
@@ -23,15 +25,21 @@ These files can be used to deploy your plugins.
 
 Deployment
 ----------
+
 You can deploy your plugins using the CDAP CLI:
 
+```
     > load artifact <target/sftp-actions-<version>.jar config-file <target/sftp-actions-<version>.json>
+```
 
 For example, if your artifact is named 'sftp-actions-1.0.0':
 
+```
     > load artifact target/sftp-actions-1.0.0.jar config-file target/sftp-actions-1.0.0.json
+```
 
-## Mailing Lists
+Mailing Lists
+-------------
 
 CDAP User Group and Development Discussions:
 
@@ -42,12 +50,13 @@ applications or building plugins for appplications. You can expect questions fro
 users, release announcements, and any other discussions that we think will be helpful
 to the users.
 
-## Slack Channel
+Slack Channel
+-------------
 
 CDAP Slack Channel: http://cdap-users.herokuapp.com
 
-
-## License and Trademarks
+License and Trademarks
+----------------------
 
 Copyright © 2017 Cask Data, Inc.
 
