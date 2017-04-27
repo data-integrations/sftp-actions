@@ -6,30 +6,30 @@ SFTP Copy
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![CDAP Action](cdap-users.herokuapp.com/assets/cdap-action.svg)](http://docs.cask.co/cdap)
 
-SFTP Copy allows copying of the files from the specified directory on SFTP servers and write them to HDFS as the destination.
+SFTP Copy copies files from a specified directory on an SFTP server and writes them to a destination in HDFS.
 The files that are copied can be optionally uncompressed before storing. The files are copied directly to HDFS without needing any additional staging area.
 
 Usage Notes
 -----------
-In order to perform a SFTP copy, we require the host and port on which the SFTP server is running. SFTP implements secure file
-transfer over SSH. Typically, port number 22 is used for SFTP (which is also default port for SSH). We also require valid
-credentials in the form of a username and password. Please make sure that you are able to SSH to the SFTP server using
-the specified username and password. The SSH connection to SFTP server can be customized by providing additional configurations
-such as enabling host key checking by setting the configuration property `StrictHostKeyChecking` to `yes`. These additional
-configurations can be specified in the `Properties for SSH` section.
+In order to perform an SFTP copy, we require the host and port on which the SFTP server is running. SFTP implements secure file
+transfer over SSH. Typically, port number 22 is used for SFTP (which is also the default port for SSH). We also require valid
+credentials in the form of a username and password are required. Please make sure that you are able to SSH to the SFTP server using
+the specified username and password. The SSH connection to the SFTP server can be customized with options such as host key checking by
+setting the configuration property `StrictHostKeyChecking` to `yes`. Additional configurations can be specified in the `Properties for
+SSH` section.
 
-The directory on the SFTP server which needs to be copied can be specified using the `Source directory` property. The specified
-directory should exist and absolute path to the directory must be provided. If directory is empty then the execution will
-continue without any error. `Destination directory` is the absolute path of the directory on HDFS where the files will be copied.
+The directory to be copied from the SFTP server can be set using the `Source directory` property. The
+directory should exist and an absolute path to it must be provided. If directory is empty then execution will
+continue without error. `Destination directory` is the absolute path of the directory on HDFS where the files will be copied.
 If the destination directory does not exist, it will be created first. If a file with the same name already exists in
 the destination directory, it will be overwritten.
 
 Files from the SFTP server can, optionally, be uncompressed while being copied to HDFS. Currently the uncompress option is only supported
 for zip files.
 
-Typically, SFTP server acts as temporary storage for the files and, once processed, the files can be deleted. A
-comma-separated list of filenames on the SFTP server which were copied to HDFS during the current run is stored in a
-variable named `sftp.copied.file.names`. The SFTP Delete action can be configured to run at the end of the pipeline,
+Typically, the SFTP server acts as temporary storage for the files and, once processed, the files can be deleted. A
+comma-separated list of filenames on the SFTP server which were copied to HDFS during the current run is stored in the
+variable `sftp.copied.file.names`. The SFTP Delete action can be configured to run at the end of the pipeline,
 which uses this variable to determine the files to be deleted from SFTP server.
 
 Plugin Configuration
