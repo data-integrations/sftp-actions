@@ -57,6 +57,11 @@
           }
         },
         {
+          "widget-type": "textbox",
+          "label": "Regex to match files that needs to be copied",
+          "name" : "fileNameRegex"
+        },
+        {
           "widget-type": "keyvalue",
           "label": "Properties for SSH",
           "name": "sshProperties",

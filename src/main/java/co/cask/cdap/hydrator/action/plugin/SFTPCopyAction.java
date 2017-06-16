@@ -25,6 +25,7 @@ import co.cask.cdap.etl.api.action.ActionContext;
 import co.cask.cdap.hydrator.action.common.SFTPActionConfig;
 import co.cask.cdap.hydrator.action.common.SFTPConnector;
 import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
 import com.google.common.io.ByteStreams;
 import com.jcraft.jsch.ChannelSftp;
 import org.apache.hadoop.conf.Configuration;
@@ -80,6 +81,9 @@ public class SFTPCopyAction extends Action {
     @Nullable
     public String variableNameHoldingFileList;
 
+    @Description("Regex to copy only the file names that match. By default, all files will be copied.")
+    @Nullable
+    public String fileNameRegex;
 
     public String getSrcDirectory() {
       return srcDirectory;
@@ -124,8 +128,17 @@ public class SFTPCopyAction extends Action {
           // ignore "." and ".." files
           continue;
         }
-        LOG.info("Downloading file {}", entry.getFilename());
 
+        // Ignore files that don't match the given file regex
+        if (!Strings.isNullOrEmpty(config.fileNameRegex)) {
+          String fileName = entry.getFilename();
+          if (!fileName.matches(config.fileNameRegex)) {
+            LOG.debug("Skipping file {} since it doesn't match the regex.", fileName);
+            continue;
+          }
+        }
+
+        LOG.info("Downloading file {}", entry.getFilename());
         String completeFileName = config.getSrcDirectory() + "/" + entry.getFilename();
 
         if (config.getExtractZipFiles() && entry.getFilename().endsWith(".zip")) {
