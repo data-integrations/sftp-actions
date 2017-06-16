@@ -40,9 +40,11 @@ public class SFTPActionConfig extends PluginConfig {
   public String port;
 
   @Description("Name of the user used to login to SFTP server.")
+  @Macro
   public String userName;
 
   @Description("Password used to login to SFTP server.")
+  @Macro
   public String password;
 
   @Description("Properties that will be used to configure the SSH connection to the FTP server. " +
