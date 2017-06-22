@@ -9,6 +9,7 @@ This repository contains CDAP Action plugins which can be used for performing SF
 
 * [SFTP Copy Action](docs/SFTPCopy-action.md)
 * [SFTP Delete Action](docs/SFTPDelete-action.md)
+* [SFTP Put Action](docs/SFTPPut-action.md)
 
 Build
 -----
