@@ -177,7 +177,6 @@ public class SFTPCopyAction extends Action {
           if (config.trackFiles != null && config.trackFiles.toLowerCase().equals("yes")) {
             // If the file tracking is enabled then check if it is already processed, if so delete it from destination
             byte[] md5 = getMD5(fileSystem, destinationPath);
-            LOG.info("MD5 {}", md5);
             String fileProcessed = getFileFromTrackingTable(context, md5);
             if (fileProcessed != null) {
               LOG.info("File {} matches md5 with already ingested file {}. Skipping", completeFileName, fileProcessed);
