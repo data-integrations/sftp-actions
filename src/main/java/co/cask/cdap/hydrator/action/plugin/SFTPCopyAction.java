@@ -16,10 +16,15 @@
 
 package co.cask.cdap.hydrator.action.plugin;
 
+import co.cask.cdap.api.TxRunnable;
 import co.cask.cdap.api.annotation.Description;
 import co.cask.cdap.api.annotation.Macro;
 import co.cask.cdap.api.annotation.Name;
 import co.cask.cdap.api.annotation.Plugin;
+import co.cask.cdap.api.common.Bytes;
+import co.cask.cdap.api.data.DatasetContext;
+import co.cask.cdap.api.dataset.lib.KeyValueTable;
+import co.cask.cdap.etl.api.PipelineConfigurer;
 import co.cask.cdap.etl.api.action.Action;
 import co.cask.cdap.etl.api.action.ActionContext;
 import co.cask.cdap.hydrator.action.common.SFTPActionConfig;
@@ -31,16 +36,18 @@ import com.jcraft.jsch.ChannelSftp;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.tephra.TransactionFailureException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.annotation.Nullable;
@@ -53,6 +60,8 @@ import javax.annotation.Nullable;
 public class SFTPCopyAction extends Action {
   private static final Logger LOG = LoggerFactory.getLogger(SFTPCopyAction.class);
   private SFTPCopyActionConfig config;
+  private KeyValueTable sftpTrackingTable;
+  private static final String TRACKING_TABLE_NAME = "SFTPTrackingTable";
 
   public SFTPCopyAction(SFTPCopyActionConfig config) {
     this.config = config;
@@ -85,6 +94,11 @@ public class SFTPCopyAction extends Action {
     @Nullable
     public String fileNameRegex;
 
+    @Nullable
+    @Description("Option to track files that is already processed by computing MD5 of files already processed. " +
+        "Only already un-processed files will be passed to next stage. By default the files are not tracked")
+    public String trackFiles;
+
     public String getSrcDirectory() {
       return srcDirectory;
     }
@@ -99,6 +113,15 @@ public class SFTPCopyAction extends Action {
 
     public String getVariableNameHoldingFileList() {
       return variableNameHoldingFileList != null ? variableNameHoldingFileList : "sftp.copied.file.names";
+    }
+  }
+
+  @Override
+  public void configurePipeline(PipelineConfigurer pipelineConfigurer) throws IllegalArgumentException {
+    super.configurePipeline(pipelineConfigurer);
+    if (config.trackFiles != null && config.trackFiles.toLowerCase().equals("yes")) {
+      // create dataset
+      pipelineConfigurer.createDataset(TRACKING_TABLE_NAME, KeyValueTable.class.getName());
     }
   }
 
@@ -150,11 +173,71 @@ public class SFTPCopyAction extends Action {
             InputStream is = channelSftp.get(completeFileName);
             ByteStreams.copy(is, output);
           }
+          if (config.trackFiles != null && config.trackFiles.toLowerCase().equals("yes")) {
+            // If the file tracking is enabled then check if it is already processed, if so delete it from destination
+            byte[] md5 = getMD5(fileSystem, destinationPath);
+            LOG.info("MD5 {}", md5);
+            String fileProcessed = getFileFromTrackingTable(context, md5);
+            if (fileProcessed != null) {
+              LOG.info("File {} matches md5 with already ingested file {}. Skipping", completeFileName, fileProcessed);
+              deleteFile(fileSystem, destinationPath);
+            } else {
+              filesCopied.add(completeFileName);
+              trackFile(context, md5, completeFileName);
+            }
+          } else {
+            filesCopied.add(completeFileName);
+          }
         }
-        filesCopied.add(completeFileName);
       }
       context.getArguments().set(config.getVariableNameHoldingFileList(), Joiner.on(",").join(filesCopied));
       LOG.info("Variables copied to {}.", Joiner.on(",").join(filesCopied));
+    }
+  }
+
+  private void trackFile(ActionContext context, final byte [] md5, final String path)
+      throws TransactionFailureException {
+    context.execute(new TxRunnable() {
+      @Override
+      public void run(DatasetContext datasetContext) throws Exception {
+        KeyValueTable table = (KeyValueTable) datasetContext.getDataset(TRACKING_TABLE_NAME);
+        table.write(md5, Bytes.toBytes(path));
+      }
+    });
+  }
+
+  private byte[] getMD5(FileSystem fileSystem, Path path) throws IOException, NoSuchAlgorithmException {
+
+    try (InputStream is = new FileInputStream(path.getPathWithoutSchemeAndAuthority(path).toString())) {
+      DigestInputStream md5 = new DigestInputStream(is, MessageDigest.getInstance("MD5"));
+      return md5.getMessageDigest().digest();
+    }
+  }
+
+  @Nullable
+  /**
+   * Returns previous processed file name.
+   */
+  private String getFileFromTrackingTable(final ActionContext context, final byte[] key)
+      throws TransactionFailureException {
+    final String[] fileProcessed = {null};
+    context.execute(new TxRunnable() {
+      @Override
+      public void run(DatasetContext datasetContext) throws Exception {
+        KeyValueTable table = (KeyValueTable) datasetContext.getDataset(TRACKING_TABLE_NAME);
+        byte[] val = table.read(key);
+        fileProcessed[0] = (val == null) ? null : new String(val, "UTF-8");
+      }
+    });
+    return fileProcessed[0];
+  }
+
+  private void deleteFile (FileSystem fileSystem, Path path) throws IOException {
+    if (fileSystem.exists(path)) {
+      boolean deleteStatus = fileSystem.delete(path, false);
+      if (!deleteStatus) {
+        throw new IOException(String.format("Failed to delete file at path %s", path.toString()));
+      }
     }
   }
 

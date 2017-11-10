@@ -49,6 +49,18 @@
           }
         },
         {
+          "widget-type": "select",
+          "label": "Track Files",
+          "name": "trackFiles",
+          "widget-attributes": {
+            "values": [
+              "yes",
+              "no"
+            ],
+            "default": "no"
+          }
+        },
+        {
           "widget-type": "textbox",
           "label": "Variable name to hold list of copied file names",
           "name": "variableNameHoldingFileList",
