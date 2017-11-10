@@ -179,11 +179,12 @@ public class SFTPCopyAction extends Action {
             byte[] md5 = getMD5(fileSystem, destinationPath);
             String fileProcessed = getFileFromTrackingTable(context, md5);
             if (fileProcessed != null) {
-              LOG.info("File {} matches md5 with already ingested file {}. Skipping", completeFileName, fileProcessed);
+              LOG.info("File {} matches md5 with already ingested file {}. Skipping",
+                  entry.getFilename(), fileProcessed);
               deleteFile(fileSystem, destinationPath);
             } else {
               filesCopied.add(completeFileName);
-              trackFile(context, md5, completeFileName);
+              trackFile(context, md5, entry.getFilename());
             }
           } else {
             filesCopied.add(completeFileName);
