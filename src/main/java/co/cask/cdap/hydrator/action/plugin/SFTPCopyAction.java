@@ -34,6 +34,7 @@ import com.google.common.base.Strings;
 import com.google.common.io.ByteStreams;
 import com.jcraft.jsch.ChannelSftp;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.tephra.TransactionFailureException;
@@ -207,8 +208,7 @@ public class SFTPCopyAction extends Action {
   }
 
   private byte[] getMD5(FileSystem fileSystem, Path path) throws IOException, NoSuchAlgorithmException {
-
-    try (InputStream is = new FileInputStream(path.getPathWithoutSchemeAndAuthority(path).toString())) {
+    try (InputStream is = fileSystem.open(path)) {
       DigestInputStream md5 = new DigestInputStream(is, MessageDigest.getInstance("MD5"));
       return md5.getMessageDigest().digest();
     }
