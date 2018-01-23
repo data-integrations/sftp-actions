@@ -70,6 +70,16 @@
             "key-placeholder": "key",
             "value-placeholder": "value"
           }
+        },
+        {
+          "widget-type": "keyvalue",
+          "label": "Properties for File System",
+          "name": "fileSystemProperties",
+          "widget-attributes": {
+            "showDelimiter": "false",
+            "key-placeholder": "key",
+            "value-placeholder": "value"
+          }
         }
       ]
     }
