@@ -36,7 +36,7 @@
 
     <!-- This is the version range for the app.parents that this plugin is valid for. Usually this will correspond with
          the CDAP version, but not always. -->
-    <etl.versionRange>[3.3.0,10.0.0-SNAPSHOT)</etl.versionRange>
+    <etl.versionRange>[3.3.0,5.0.0)</etl.versionRange>
 
     <!-- These are the application template artifacts that this plugin will be available for. -->
     <app.parents>
