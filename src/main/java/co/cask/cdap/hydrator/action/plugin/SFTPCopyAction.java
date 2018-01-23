@@ -109,15 +109,14 @@ public class SFTPCopyAction extends Action {
       return variableNameHoldingFileList != null ? variableNameHoldingFileList : "sftp.copied.file.names";
     }
 
-
     public Map<String, String> getFileSystemProperties(){
       Map<String, String> properties = new HashMap<>();
       if (fileSystemProperties == null || fileSystemProperties.isEmpty()) {
         return properties;
       }
 
-      KeyValueListParser kvParser = new KeyValueListParser("\\s*,\\s*", ":");
-      for (KeyValue<String, String> keyVal : kvParser.parse(sshProperties)) {
+      KeyValueListParser kvParser = new KeyValueListParser("\\s*,\\s*", "=>");
+      for (KeyValue<String, String> keyVal : kvParser.parse(fileSystemProperties)) {
         String key = keyVal.getKey();
         String val = keyVal.getValue();
         properties.put(key, val);

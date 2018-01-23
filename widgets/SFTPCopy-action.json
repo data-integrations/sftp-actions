@@ -76,6 +76,7 @@
           "label": "Properties for File System",
           "name": "fileSystemProperties",
           "widget-attributes": {
+            "kv-delimiter": "=>",
             "showDelimiter": "false",
             "key-placeholder": "key",
             "value-placeholder": "value"
