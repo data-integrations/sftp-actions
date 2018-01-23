@@ -47,6 +47,7 @@ Plugin Configuration
 | **File Name Regex** | **N** | .* | Regex to choose only the files that are of interest. All files will be copied by default.|
 | **Variable name to hold list of copied file names** | **N** | sftp.copied.file.names | Name of the variable which holds comma separated list of file names on the SFTP server which were copied during this run of the plugin. Usually this variable is used as Macro in the SFTP Delete action to delete the files from SFTP server once their processing is successful. |
 | **Properties for SSH** | **N** | N/A | Specifies the properties that are used to configure SSH connection to the FTP server. For example to enable verbose logging add property 'LogLevel' with value 'VERBOSE'. To enable host key checking set 'StrictHostKeyChecking' to 'yes'. SSH can be configured with the properties described here 'https://linux.die.net/man/5/ssh_config'. |
+| **Properties for FileSystem** | **N** | N/A | Specifies the properties that are used to configure Destination File system for example: HDFS, ADLS |
 
 
 Build

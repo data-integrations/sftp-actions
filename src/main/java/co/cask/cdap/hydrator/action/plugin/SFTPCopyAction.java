@@ -20,10 +20,12 @@ import co.cask.cdap.api.annotation.Description;
 import co.cask.cdap.api.annotation.Macro;
 import co.cask.cdap.api.annotation.Name;
 import co.cask.cdap.api.annotation.Plugin;
+import co.cask.cdap.api.dataset.lib.KeyValue;
 import co.cask.cdap.etl.api.action.Action;
 import co.cask.cdap.etl.api.action.ActionContext;
 import co.cask.cdap.hydrator.action.common.SFTPActionConfig;
 import co.cask.cdap.hydrator.action.common.SFTPConnector;
+import co.cask.hydrator.common.KeyValueListParser;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.io.ByteStreams;
@@ -39,7 +41,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -85,6 +89,10 @@ public class SFTPCopyAction extends Action {
     @Nullable
     public String fileNameRegex;
 
+    @Description("Properties that will be used to configure the file destination system.")
+    @Nullable
+    public String fileSystemProperties;
+
     public String getSrcDirectory() {
       return srcDirectory;
     }
@@ -100,12 +108,36 @@ public class SFTPCopyAction extends Action {
     public String getVariableNameHoldingFileList() {
       return variableNameHoldingFileList != null ? variableNameHoldingFileList : "sftp.copied.file.names";
     }
+
+
+    public Map<String, String> getFileSystemProperties(){
+      Map<String, String> properties = new HashMap<>();
+      if (fileSystemProperties == null || fileSystemProperties.isEmpty()) {
+        return properties;
+      }
+
+      KeyValueListParser kvParser = new KeyValueListParser("\\s*,\\s*", ":");
+      for (KeyValue<String, String> keyVal : kvParser.parse(sshProperties)) {
+        String key = keyVal.getKey();
+        String val = keyVal.getValue();
+        properties.put(key, val);
+      }
+      return properties;
+    }
   }
 
   @Override
   public void run(ActionContext context) throws Exception {
     Path destination = new Path(config.getDestDirectory());
-    FileSystem fileSystem = FileSystem.get(new Configuration());
+
+    Configuration conf = new Configuration();
+    Map<String, String> properties = config.getFileSystemProperties();
+    for (Map.Entry<String, String> entry : properties.entrySet()) {
+      conf.set(entry.getKey(), entry.getValue());
+    }
+
+    FileSystem fileSystem = FileSystem.get(conf);
+
     destination = fileSystem.makeQualified(destination);
     if (!fileSystem.exists(destination)) {
       fileSystem.mkdirs(destination);
