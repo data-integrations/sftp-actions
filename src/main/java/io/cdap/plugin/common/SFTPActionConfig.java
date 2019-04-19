@@ -14,13 +14,13 @@
  * the License.
  */
 
-package co.cask.cdap.hydrator.action.common;
+package io.cdap.plugin.common;
 
-import co.cask.cdap.api.annotation.Description;
-import co.cask.cdap.api.annotation.Macro;
-import co.cask.cdap.api.dataset.lib.KeyValue;
-import co.cask.cdap.api.plugin.PluginConfig;
-import co.cask.hydrator.common.KeyValueListParser;
+import io.cdap.cdap.api.annotation.Description;
+import io.cdap.cdap.api.annotation.Macro;
+import io.cdap.cdap.api.dataset.lib.KeyValue;
+import io.cdap.cdap.api.plugin.PluginConfig;
+import io.cdap.plugin.common.KeyValueListParser;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -14,18 +14,18 @@
  * the License.
  */
 
-package co.cask.cdap.hydrator.action.plugin;
+package io.cdap.plugin;
 
-import co.cask.cdap.api.annotation.Description;
-import co.cask.cdap.api.annotation.Macro;
-import co.cask.cdap.api.annotation.Name;
-import co.cask.cdap.api.annotation.Plugin;
-import co.cask.cdap.api.dataset.lib.KeyValue;
-import co.cask.cdap.etl.api.action.Action;
-import co.cask.cdap.etl.api.action.ActionContext;
-import co.cask.cdap.hydrator.action.common.SFTPActionConfig;
-import co.cask.cdap.hydrator.action.common.SFTPConnector;
-import co.cask.hydrator.common.KeyValueListParser;
+import io.cdap.cdap.api.annotation.Description;
+import io.cdap.cdap.api.annotation.Macro;
+import io.cdap.cdap.api.annotation.Name;
+import io.cdap.cdap.api.annotation.Plugin;
+import io.cdap.cdap.api.dataset.lib.KeyValue;
+import io.cdap.cdap.etl.api.action.Action;
+import io.cdap.cdap.etl.api.action.ActionContext;
+import io.cdap.plugin.common.SFTPActionConfig;
+import io.cdap.plugin.common.SFTPConnector;
+import io.cdap.plugin.common.KeyValueListParser;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.io.ByteStreams;

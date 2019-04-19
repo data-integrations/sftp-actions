@@ -14,7 +14,7 @@
  * the License.
  */
 
-package co.cask.cdap.hydrator.action.common;
+package io.cdap.plugin.common;
 
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelSftp;
