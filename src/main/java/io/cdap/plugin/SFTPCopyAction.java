@@ -16,11 +16,13 @@
 
 package io.cdap.plugin;
 
+import com.jcraft.jsch.SftpException;
 import io.cdap.cdap.api.annotation.Description;
 import io.cdap.cdap.api.annotation.Macro;
 import io.cdap.cdap.api.annotation.Name;
 import io.cdap.cdap.api.annotation.Plugin;
 import io.cdap.cdap.api.dataset.lib.KeyValue;
+import io.cdap.cdap.etl.api.PipelineConfigurer;
 import io.cdap.cdap.etl.api.action.Action;
 import io.cdap.cdap.etl.api.action.ActionContext;
 import io.cdap.plugin.common.SFTPActionConfig;
@@ -62,10 +64,16 @@ public class SFTPCopyAction extends Action {
     this.config = config;
   }
 
+  @Override
+  public void configurePipeline(PipelineConfigurer pipelineConfigurer) {
+    super.configurePipeline(pipelineConfigurer);
+    config.validate();
+  }
+
   /**
    * Configurations for the FTP copy action plugin.
    */
-  public class SFTPCopyActionConfig extends SFTPActionConfig {
+  public static class SFTPCopyActionConfig extends SFTPActionConfig {
     @Description("Directory on the SFTP server which is to be copied.")
     @Macro
     public String srcDirectory;
@@ -123,6 +131,22 @@ public class SFTPCopyAction extends Action {
       }
       return properties;
     }
+    public SFTPCopyActionConfig(String host, int port, String userName, String password,
+                               String sshProperties, String srcPath, String destDirectory, String authType){
+      this.host = host;
+      this.port = port;
+      this.userName = userName;
+      this.password = password;
+      this.sshProperties = sshProperties;
+      this.srcDirectory = srcPath;
+      this.destDirectory = destDirectory;
+      this.authTypeBeingUsed = authType;
+    }
+
+    public void validate() throws IllegalArgumentException {
+      // Check for required parameters
+      // Check for required params for each action
+    }
   }
 
   @Override
@@ -142,8 +166,27 @@ public class SFTPCopyAction extends Action {
       fileSystem.mkdirs(destination);
     }
 
-    try (SFTPConnector SFTPConnector = new SFTPConnector(config.getHost(), config.getPort(), config.getUserName(),
-                                                      config.getPassword(), config.getSSHProperties())) {
+    if (config.getAuthTypeBeingUsed().equals("privatekey-select")) {
+      try (SFTPConnector SFTPConnector = new SFTPConnector(config.getHost(), config.getPort(), config.getUserName(),
+              config.getPrivateKey(), config.getPassphrase(), config.getSSHProperties())) {
+        sftpCopyLogic(fileSystem, destination, SFTPConnector, context);
+      } catch (Exception e){
+        LOG.error(String.valueOf(e));
+      }
+    } else {
+      try (SFTPConnector SFTPConnector = new SFTPConnector(config.getHost(), config.getPort(), config.getUserName(),
+              config.getPassword(), config.getSSHProperties())) {
+        sftpCopyLogic(fileSystem, destination, SFTPConnector, context);
+      } catch (Exception e) {
+        LOG.error(String.valueOf(e));
+      }
+    }
+  }
+
+
+  public void sftpCopyLogic(FileSystem fileSystem, Path destination, SFTPConnector SFTPConnector,
+                    ActionContext context) throws SftpException, IOException {
+
       ChannelSftp channelSftp = SFTPConnector.getSftpChannel();
 
       Vector files = channelSftp.ls(config.getSrcDirectory());
@@ -187,7 +230,6 @@ public class SFTPCopyAction extends Action {
       context.getArguments().set(config.getVariableNameHoldingFileList(), Joiner.on(",").join(filesCopied));
       LOG.info("Variables copied to {}.", Joiner.on(",").join(filesCopied));
     }
-  }
 
   private void copyJschZip(InputStream is, FileSystem fs, Path destination) throws IOException {
     try (ZipInputStream zis = new ZipInputStream(new BufferedInputStream(is))) {

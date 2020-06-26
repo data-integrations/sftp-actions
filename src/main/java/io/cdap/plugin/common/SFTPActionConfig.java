@@ -18,10 +18,9 @@ package io.cdap.plugin.common;
 
 import io.cdap.cdap.api.annotation.Description;
 import io.cdap.cdap.api.annotation.Macro;
+import io.cdap.cdap.api.annotation.Name;
 import io.cdap.cdap.api.dataset.lib.KeyValue;
 import io.cdap.cdap.api.plugin.PluginConfig;
-import io.cdap.plugin.common.KeyValueListParser;
-
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -37,14 +36,30 @@ public class SFTPActionConfig extends PluginConfig {
   @Description("Port on which SFTP server is running. Defaults to 22.")
   @Nullable
   @Macro
-  public String port;
+  public Integer port;
 
   @Description("Name of the user used to login to SFTP server.")
   @Macro
   public String userName;
 
-  @Description("Password used to login to SFTP server.")
+  @Description("Private Key to be used to login to SFTP Server. SSH key must be of RSA type")
   @Macro
+  @Nullable
+  public String privateKey;
+
+  @Description("Passphrase to be used with private key if passphrase was enabled when key was created. " +
+          "If PrivateKey is selected for Authentication")
+  @Macro
+  @Nullable
+  public String passphrase;
+
+  @Name("Authentication")
+  @Description("Authentication type to be used for connection")
+  public String authTypeBeingUsed;
+
+  @Description("Password used to login to SFTP server. If Password is selected for Authentication")
+  @Macro
+  @Nullable
   public String password;
 
   @Description("Properties that will be used to configure the SSH connection to the FTP server. " +
@@ -59,7 +74,7 @@ public class SFTPActionConfig extends PluginConfig {
   }
 
   public int getPort() {
-    return (port != null) ? Integer.parseInt(port) : 22;
+    return (port != null) ? port : 22;
   }
 
   public String getUserName() {
@@ -68,6 +83,20 @@ public class SFTPActionConfig extends PluginConfig {
 
   public String getPassword() {
     return password;
+  }
+
+  public byte[] getPrivateKey() {
+    assert privateKey != null;
+    return privateKey.getBytes();
+  }
+
+  public String getAuthTypeBeingUsed() { return authTypeBeingUsed; }
+
+  public byte[] getPassphrase(){
+    if (passphrase == null){
+      passphrase = "";
+    }
+    return passphrase.getBytes();
   }
 
   public Map<String, String> getSSHProperties(){

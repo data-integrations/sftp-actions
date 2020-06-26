@@ -31,17 +31,35 @@ import java.util.Properties;
  */
 public class SFTPConnector implements AutoCloseable {
   private static final Logger LOG = LoggerFactory.getLogger(SFTPConnector.class);
+  private static Channel channel;
   private final Session session;
-  private final Channel channel;
 
-  public SFTPConnector(String host, int port, String userName, String password, Map<String, String> sessionProperties)
-    throws Exception {
+
+    //Connector Object to be used for Auth with Password
+    public SFTPConnector(String host, int port, String userName, String password,
+                         Map<String, String> sessionProperties)
+          throws Exception {
     JSch jsch = new JSch();
     this.session = jsch.getSession(userName, host, port);
     session.setPassword(password);
     LOG.info("Properties {}", sessionProperties);
     Properties properties = new Properties();
-    // properties.put("StrictHostKeyChecking", "no");
+    properties.putAll(sessionProperties);
+    session.setConfig(properties);
+    LOG.info("Connecting to Host: {}, Port: {}, with User: {}", host, port, userName);
+    session.connect(30000);
+    channel = session.openChannel("sftp");
+    channel.connect();
+  }
+  // Connector Object to be used for Auth with SSH privatekey.
+  public SFTPConnector(String host, int port, String userName, byte[] privateKey,
+                       byte[] passphrase, Map<String, String> sessionProperties)
+          throws Exception {
+    JSch jsch = new JSch();
+    jsch.addIdentity("key", privateKey,null,passphrase);
+    this.session = jsch.getSession(userName, host, port);
+    LOG.info("Properties {}", sessionProperties);
+    Properties properties = new Properties();
     properties.putAll(sessionProperties);
     session.setConfig(properties);
     LOG.info("Connecting to Host: {}, Port: {}, with User: {}", host, port, userName);
@@ -53,12 +71,12 @@ public class SFTPConnector implements AutoCloseable {
   /**
    * Get the established sftp channel to perform operations.
    */
-  public ChannelSftp getSftpChannel() {
+  public static ChannelSftp getSftpChannel() {
     return (ChannelSftp) channel;
   }
 
   @Override
-  public void close() throws Exception {
+  public void close() {
     LOG.info("Closing SFTP session.");
     if (channel != null) {
       try {

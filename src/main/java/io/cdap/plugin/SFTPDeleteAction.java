@@ -1,9 +1,11 @@
 package io.cdap.plugin;
 
+import com.jcraft.jsch.SftpException;
 import io.cdap.cdap.api.annotation.Description;
 import io.cdap.cdap.api.annotation.Macro;
 import io.cdap.cdap.api.annotation.Name;
 import io.cdap.cdap.api.annotation.Plugin;
+import io.cdap.cdap.etl.api.PipelineConfigurer;
 import io.cdap.cdap.etl.api.action.Action;
 import io.cdap.cdap.etl.api.action.ActionContext;
 import io.cdap.plugin.common.SFTPActionConfig;
@@ -21,21 +23,44 @@ public class SFTPDeleteAction extends Action {
 
   private static final Logger LOG = LoggerFactory.getLogger(SFTPDeleteAction.class);
   private SFTPDeleteActionConfig config;
+
   public SFTPDeleteAction(SFTPDeleteActionConfig config) {
     this.config = config;
   }
 
-  public class SFTPDeleteActionConfig extends SFTPActionConfig {
+  @Override
+  public void configurePipeline(PipelineConfigurer pipelineConfigurer) {
+    super.configurePipeline(pipelineConfigurer);
+    config.validate();
+  }
+
+  public static class SFTPDeleteActionConfig extends SFTPActionConfig {
     @Description("Comma separated list of files to be deleted from FTP server.")
     @Macro
     public String filesToDelete;
 
     @Description("Boolean flag to determine if execution should continue if there is an error while deleting any file." +
-      " Defaults to 'false'.")
+            " Defaults to 'false'.")
     boolean continueOnError;
 
     public String getFilesToDelete() {
       return filesToDelete;
+    }
+
+    public SFTPDeleteActionConfig(String host, int port, String userName, String password,
+                                String sshProperties, String filesToDelete, String authType){
+      this.host = host;
+      this.port = port;
+      this.userName = userName;
+      this.password = password;
+      this.sshProperties = sshProperties;
+      this.filesToDelete = filesToDelete;
+      this.authTypeBeingUsed = authType;
+    }
+
+    public void validate() throws IllegalArgumentException {
+      // Check for required parameters
+      // Check for required params for each action
     }
   }
 
@@ -45,8 +70,26 @@ public class SFTPDeleteAction extends Action {
     if (filesToDelete == null || filesToDelete.isEmpty()) {
       return;
     }
-    try (SFTPConnector SFTPConnector = new SFTPConnector(config.getHost(), config.getPort(), config.getUserName(),
-                                                      config.getPassword(), config.getSSHProperties())) {
+    if (config.getAuthTypeBeingUsed().equals("privatekey-select")) {
+      try (SFTPConnector SFTPConnector = new SFTPConnector(config.getHost(), config.getPort(), config.getUserName(),
+              config.getPrivateKey(), config.getPassphrase(), config.getSSHProperties())) {
+
+        sftpDeleteLogic(filesToDelete, SFTPConnector);
+      } catch (Exception e){
+        LOG.error(String.valueOf(e));
+      }
+    } else {
+      try (SFTPConnector SFTPConnector = new SFTPConnector(config.getHost(), config.getPort(), config.getUserName(),
+              config.getPassword(), config.getSSHProperties())) {
+
+        sftpDeleteLogic(filesToDelete, SFTPConnector);
+      } catch (Exception e){
+        LOG.error(String.valueOf(e));
+      }
+    }
+  }
+
+    private void sftpDeleteLogic (String filesToDelete, SFTPConnector SFTPConnector) throws SftpException {
       ChannelSftp channelSftp = SFTPConnector.getSftpChannel();
       for (String fileToDelete : filesToDelete.split(",")) {
         LOG.info("Deleting {}", fileToDelete);
@@ -62,4 +105,3 @@ public class SFTPDeleteAction extends Action {
       }
     }
   }
-}
