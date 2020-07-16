@@ -132,7 +132,8 @@ public class SFTPCopyAction extends Action {
       return properties;
     }
     public SFTPCopyActionConfig(String host, int port, String userName, String password,
-                               String sshProperties, String srcPath, String destDirectory, String authType){
+        String sshProperties, String srcPath, String destDirectory, String authType){
+
       this.host = host;
       this.port = port;
       this.userName = userName;

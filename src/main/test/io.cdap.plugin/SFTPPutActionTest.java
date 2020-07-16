@@ -7,8 +7,13 @@ import com.jcraft.jsch.Session;
 import io.cdap.cdap.etl.mock.action.MockActionContext;
 import io.cdap.cdap.etl.mock.common.MockPipelineConfigurer;
 import org.junit.*;
+import org.junit.rules.TemporaryFolder;
 import software.sham.sftp.MockSftpServer;
+
+import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -20,6 +25,8 @@ public class SFTPPutActionTest {
     MockSftpServer server;
     Session sshSession;
 
+    @Rule
+    public TemporaryFolder tempFolder = new TemporaryFolder();
 
     @Before
     public void initSftp() throws IOException {
@@ -46,7 +53,8 @@ public class SFTPPutActionTest {
 
     @Test
     public void testPutFile() throws Exception {
-        String filePath = "src/main/test/resources/";
+        File tempFile = tempFolder.newFile();
+        Files.write(tempFile.toPath(), "test".getBytes(StandardCharsets.UTF_8));
         String destPath = server.getBaseDirectory().toString();
         SFTPPutAction.SFTPPutActionConfig config = new SFTPPutAction.SFTPPutActionConfig(
                 "localhost",
@@ -54,7 +62,7 @@ public class SFTPPutActionTest {
                 "tester",
                 "testing",
                 "",
-                filePath,
+                tempFile.toString(),
                 destPath,
                 "password");
         MockPipelineConfigurer configurer = new MockPipelineConfigurer(null);

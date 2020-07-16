@@ -34,7 +34,7 @@
     <widgets.dir>widgets</widgets.dir>
     <docs.dir>docs</docs.dir>
 
-    <!-- This is the version range for the app.parents that this plugin is valid for. Usually this will correspond with
+    <!-- This is the version range for the app.parents that this plugin is valid for. Usally this will correspond with
          the CDAP version, but not always. -->
     <etl.versionRange>[6.0.0-SNAPSHOT,7.0.0-SNAPSHOT)</etl.versionRange>
 

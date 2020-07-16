@@ -10,10 +10,15 @@ import org.junit.After;
 import org.junit.Before;
 
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import software.sham.sftp.MockSftpServer;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Properties;
 
 
@@ -23,6 +28,8 @@ public class SFTPCopyActionTest {
 MockSftpServer server;
     Session sshSession;
 
+    @Rule
+    public TemporaryFolder tempFolder = new TemporaryFolder();
     @Before
     public void initSftp() throws IOException {
         server = new MockSftpServer(9022);
@@ -46,7 +53,10 @@ MockSftpServer server;
 
     @Test
     public void testCopyFile() throws Exception {
-        String filePath = "src/main/test/resources/";
+        File tempFile = tempFolder.newFile();
+        Files.write(tempFile.toPath(), "test".getBytes(StandardCharsets.UTF_8));
+
+        String sourcePath = tempFile.getAbsoluteFile().toString();
         String destPath = server.getBaseDirectory().toString();
         SFTPCopyAction.SFTPCopyActionConfig config = new SFTPCopyAction.SFTPCopyActionConfig(
                 "localhost",
@@ -54,7 +64,7 @@ MockSftpServer server;
                 "tester",
                 "testing",
                 "",
-                filePath,
+                sourcePath,
                 destPath,
                 "password");
         MockPipelineConfigurer configurer = new MockPipelineConfigurer(null);
