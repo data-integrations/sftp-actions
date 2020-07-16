@@ -18,8 +18,26 @@
         },
         {
           "widget-type": "textbox",
-          "label": "User name",
+          "label": "User Name",
           "name": "userName"
+        },
+        {
+          "name": "Authentication",
+          "widget-type": "radio-group",
+          "widget-attributes": {
+            "layout": "inline",
+            "default": "privatekey-select",
+            "options": [
+              {
+                "id": "privatekey-select",
+                "label": "PrivateKey"
+              },
+              {
+                "id": "password-select",
+                "label": "Password"
+              }
+            ]
+          }
         },
         {
           "widget-type": "password",
@@ -27,26 +45,24 @@
           "name": "password"
         },
         {
+          "widget-type": "textarea",
+        "label": "PrivateKey",
+        "name": "privateKey"
+        },
+        {
+          "widget-type": "password",
+          "label": "PrivateKey Passphrase",
+          "name": "passphrase"
+        },
+        {
           "widget-type": "textbox",
-          "label": "Source directory",
+          "label": "Source Directory",
           "name": "srcDirectory"
         },
         {
           "widget-type": "textbox",
-          "label": "Destination directory",
+          "label": "Destination Directory",
           "name": "destDirectory"
-        },
-        {
-          "widget-type": "select",
-          "label": "Uncompress",
-          "name": "extractZipFiles",
-          "widget-attributes": {
-            "values": [
-              "true",
-              "false"
-            ],
-            "default": "true"
-          }
         },
         {
           "widget-type": "textbox",
@@ -61,6 +77,7 @@
           "label": "Regex to match files that needs to be copied",
           "name" : "fileNameRegex"
         },
+
         {
           "widget-type": "keyvalue",
           "label": "Properties for SSH",
@@ -86,5 +103,36 @@
     }
   ],
   "outputs": [
-        ]
+        ],
+  "filters": [
+    {
+      "name": "AuthByPrivateKey",
+      "condition": {
+        "expression": "Authentication == 'privatekey-select'"
+      },
+      "show":[
+        {
+          "type": "property",
+          "name": "privateKey"
+        },
+        {
+          "type": "property",
+          "name": "passphrase"
+        }
+      ]
+    },
+    {
+      "name": "AuthByPassword",
+      "condition": {
+        "expression": "Authentication == 'password-select'"
+      },
+      "show":
+      [
+        {
+          "type": "property",
+          "name": "password"
+        }
+      ]
+    }
+  ]
       }
