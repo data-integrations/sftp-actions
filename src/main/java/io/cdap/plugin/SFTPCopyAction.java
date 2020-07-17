@@ -1,5 +1,5 @@
 /*
- * Copyright © 2017 Cask Data, Inc.
+ * Copyright © 2019 Cask Data, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -37,7 +37,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,7 +58,6 @@ import javax.annotation.Nullable;
 public class SFTPCopyAction extends Action {
   private static final Logger LOG = LoggerFactory.getLogger(SFTPCopyAction.class);
   private SFTPCopyActionConfig config;
-
   public SFTPCopyAction(SFTPCopyActionConfig config) {
     this.config = config;
   }
@@ -69,7 +67,6 @@ public class SFTPCopyAction extends Action {
     super.configurePipeline(pipelineConfigurer);
     config.validate();
   }
-
   /**
    * Configurations for the FTP copy action plugin.
    */
@@ -122,7 +119,6 @@ public class SFTPCopyAction extends Action {
       if (fileSystemProperties == null || fileSystemProperties.isEmpty()) {
         return properties;
       }
-
       KeyValueListParser kvParser = new KeyValueListParser("\\s*,\\s*", "=>");
       for (KeyValue<String, String> keyVal : kvParser.parse(fileSystemProperties)) {
         String key = keyVal.getKey();
@@ -131,9 +127,9 @@ public class SFTPCopyAction extends Action {
       }
       return properties;
     }
+
     public SFTPCopyActionConfig(String host, int port, String userName, String password,
         String sshProperties, String srcPath, String destDirectory, String authType){
-
       this.host = host;
       this.port = port;
       this.userName = userName;
@@ -153,30 +149,26 @@ public class SFTPCopyAction extends Action {
   @Override
   public void run(ActionContext context) throws Exception {
     Path destination = new Path(config.getDestDirectory());
-
     Configuration conf = new Configuration();
     Map<String, String> properties = config.getFileSystemProperties();
     for (Map.Entry<String, String> entry : properties.entrySet()) {
       conf.set(entry.getKey(), entry.getValue());
     }
-
     FileSystem fileSystem = FileSystem.get(conf);
-
     destination = fileSystem.makeQualified(destination);
     if (!fileSystem.exists(destination)) {
       fileSystem.mkdirs(destination);
     }
-
     if (config.getAuthTypeBeingUsed().equals("privatekey-select")) {
-      try (SFTPConnector SFTPConnector = new SFTPConnector(config.getHost(), config.getPort(), config.getUserName(),
-              config.getPrivateKey(), config.getPassphrase(), config.getSSHProperties())) {
+      try (SFTPConnector SFTPConnector = new SFTPConnector(config.getHost(), config.getPort(),
+          config.getUserName(), config.getPrivateKey(), config.getPassphrase(), config.getSSHProperties())) {
         sftpCopyLogic(fileSystem, destination, SFTPConnector, context);
       } catch (Exception e){
         LOG.error(String.valueOf(e));
       }
     } else {
-      try (SFTPConnector SFTPConnector = new SFTPConnector(config.getHost(), config.getPort(), config.getUserName(),
-              config.getPassword(), config.getSSHProperties())) {
+      try (SFTPConnector SFTPConnector = new SFTPConnector(config.getHost(), config.getPort(),
+          config.getUserName(), config.getPassword(), config.getSSHProperties())) {
         sftpCopyLogic(fileSystem, destination, SFTPConnector, context);
       } catch (Exception e) {
         LOG.error(String.valueOf(e));
@@ -184,14 +176,10 @@ public class SFTPCopyAction extends Action {
     }
   }
 
-
   public void sftpCopyLogic(FileSystem fileSystem, Path destination, SFTPConnector SFTPConnector,
-                    ActionContext context) throws SftpException, IOException {
-
+      ActionContext context) throws SftpException, IOException {
       ChannelSftp channelSftp = SFTPConnector.getSftpChannel();
-
       Vector files = channelSftp.ls(config.getSrcDirectory());
-
       List<String> filesCopied = new ArrayList<>();
       for (int index = 0; index < files.size(); index++) {
         Object obj = files.elementAt(index);
@@ -203,7 +191,6 @@ public class SFTPCopyAction extends Action {
           // ignore "." and ".." files
           continue;
         }
-
         // Ignore files that don't match the given file regex
         if (!Strings.isNullOrEmpty(config.fileNameRegex)) {
           String fileName = entry.getFilename();
@@ -212,10 +199,8 @@ public class SFTPCopyAction extends Action {
             continue;
           }
         }
-
         LOG.info("Downloading file {}", entry.getFilename());
         String completeFileName = config.getSrcDirectory() + "/" + entry.getFilename();
-
         if (config.getExtractZipFiles() && entry.getFilename().endsWith(".zip")) {
           copyJschZip(channelSftp.get(completeFileName), fileSystem, destination);
         } else {
