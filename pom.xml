@@ -20,12 +20,12 @@
   <groupId>io.cdap.plugin</groupId>
   <artifactId>sftp-actions</artifactId>
   <packaging>jar</packaging>
-  <version>1.4.0</version>
+  <version>1.4.1</version>
   <name>SFTP Actions</name>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <cdap.version>6.0.0-SNAPSHOT</cdap.version>
-    <hydrator.version>2.2.0-SNAPSHOT</hydrator.version>
+    <cdap.version>6.0.0</cdap.version>
+    <hydrator.version>2.2.0</hydrator.version>
     <jsch.version>0.1.53</jsch.version>
     <hadoop.version>2.3.0</hadoop.version>
     <guava.version>19.0</guava.version>
@@ -36,7 +36,7 @@
 
     <!-- This is the version range for the app.parents that this plugin is valid for. Usually this will correspond with
          the CDAP version, but not always. -->
-    <etl.versionRange>[6.0.0-SNAPSHOT,7.0.0-SNAPSHOT)</etl.versionRange>
+    <etl.versionRange>[6.0.0,7.0.0-SNAPSHOT)</etl.versionRange>
 
     <!-- These are the application template artifacts that this plugin will be available for. -->
     <app.parents>
