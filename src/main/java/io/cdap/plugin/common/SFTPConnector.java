@@ -1,5 +1,5 @@
 /*
- * Copyright © 2017 Cask Data, Inc.
+ * Copyright © 2019 Cask Data, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -34,11 +34,9 @@ public class SFTPConnector implements AutoCloseable {
   private static Channel channel;
   private final Session session;
 
-
     //Connector Object to be used for Auth with Password
-    public SFTPConnector(String host, int port, String userName, String password,
-                         Map<String, String> sessionProperties)
-          throws Exception {
+  public SFTPConnector(String host, int port, String userName, String password,
+                         Map<String, String> sessionProperties) throws Exception {
     JSch jsch = new JSch();
     this.session = jsch.getSession(userName, host, port);
     session.setPassword(password);
@@ -51,12 +49,11 @@ public class SFTPConnector implements AutoCloseable {
     channel = session.openChannel("sftp");
     channel.connect();
   }
-  // Connector Object to be used for Auth with SSH privatekey.
+  // Connector Object to be used for Auth with SSH PrivateKey.
   public SFTPConnector(String host, int port, String userName, byte[] privateKey,
-                       byte[] passphrase, Map<String, String> sessionProperties)
-          throws Exception {
+      byte[] passphrase, Map<String, String> sessionProperties) throws Exception {
     JSch jsch = new JSch();
-    jsch.addIdentity("key", privateKey,null,passphrase);
+    jsch.addIdentity("key", privateKey,null, passphrase);
     this.session = jsch.getSession(userName, host, port);
     LOG.info("Properties {}", sessionProperties);
     Properties properties = new Properties();
@@ -67,13 +64,10 @@ public class SFTPConnector implements AutoCloseable {
     channel = session.openChannel("sftp");
     channel.connect();
   }
-
   /**
    * Get the established sftp channel to perform operations.
    */
-  public static ChannelSftp getSftpChannel() {
-    return (ChannelSftp) channel;
-  }
+  public static ChannelSftp getSftpChannel() { return (ChannelSftp) channel; }
 
   @Override
   public void close() {
@@ -85,7 +79,6 @@ public class SFTPConnector implements AutoCloseable {
         LOG.warn("Error while disconnecting sftp channel.", t);
       }
     }
-
     if (session != null) {
       try {
         session.disconnect();

@@ -32,4 +32,4 @@ Properties
 Usage Notes
 --------
 
-In order to perform SCP between to remote hosts, we require a Bato. An SCP command based on the configuration supplied will be created to perform a compressed file copy. Authentication setup between all hosts will need to be setup before hand. This includes being able to SSH on the bastion host with the private key being supplied in the configuration and have the 2 remote hosts that files are being moved on having known host/authenticated_keys setup for SSH communication between them.stion host that we will ssh in
+In order to perform SCP between to remote hosts, we require a Bastion Host. An SCP command based on the configuration supplied will be created to perform a file copy. Authentication setup between all hosts will need to be setup before hand. This includes being able to SSH on the bastion host with the private key being supplied in the configuration and have the 2 remote hosts that files are being moved on having known host/authenticated_keys setup for SSH communication.

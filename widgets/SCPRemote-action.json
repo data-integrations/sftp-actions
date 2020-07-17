@@ -31,7 +31,6 @@
           "label": "PrivateKey Passphrase",
           "name": "passphrase"
         },
-
     {
       "label": "Compression Flag",
       "name": "compressionFlag",
@@ -96,13 +95,13 @@
       "properties": [
         {
           "widget-type": "textbox",
-          "label": "Host A User Name",
-          "name": "userNameA"
+          "label": "Host A Hostname",
+          "name": "hostA"
         },
         {
           "widget-type": "textbox",
-          "label": "Host A Hostname",
-          "name": "hostA"
+          "label": "Host A User Name",
+          "name": "userNameA"
         },
         {
           "widget-type": "textbox",
@@ -111,19 +110,18 @@
         }
       ]
     },
-
     {
       "label": "Remote Host B Properties",
       "properties": [
         {
           "widget-type": "textbox",
-          "label": "Host B User Name",
-          "name": "userNameB"
+          "label": "Host B Hostname",
+          "name": "hostB"
         },
         {
           "widget-type": "textbox",
-          "label": "Host B Hostname",
-          "name": "hostB"
+          "label": "Host B User Name",
+          "name": "userNameB"
         },
         {
           "widget-type": "textbox",

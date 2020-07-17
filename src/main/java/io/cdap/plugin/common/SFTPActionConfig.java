@@ -1,5 +1,5 @@
 /*
- * Copyright © 2017 Cask Data, Inc.
+ * Copyright © 2019 Cask Data, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,6 +21,7 @@ import io.cdap.cdap.api.annotation.Macro;
 import io.cdap.cdap.api.annotation.Name;
 import io.cdap.cdap.api.dataset.lib.KeyValue;
 import io.cdap.cdap.api.plugin.PluginConfig;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -73,9 +74,7 @@ public class SFTPActionConfig extends PluginConfig {
     return host;
   }
 
-  public int getPort() {
-    return (port != null) ? port : 22;
-  }
+  public int getPort() { return (port != null) ? port : 22; }
 
   public String getUserName() {
     return userName;
@@ -85,19 +84,12 @@ public class SFTPActionConfig extends PluginConfig {
     return password;
   }
 
-  public byte[] getPrivateKey() {
-    assert privateKey != null;
-    return privateKey.getBytes();
-  }
+  public byte[] getPrivateKey() { return privateKey.getBytes(StandardCharsets.UTF_8); }
 
   public String getAuthTypeBeingUsed() { return authTypeBeingUsed; }
 
   public byte[] getPassphrase(){
-    if (passphrase == null){
-      passphrase = "";
-    }
-    return passphrase.getBytes();
-  }
+    return passphrase == null ? new byte[0] : passphrase.getBytes(StandardCharsets.UTF_8); }
 
   public Map<String, String> getSSHProperties(){
     Map<String, String> properties = new HashMap<>();
@@ -106,7 +98,6 @@ public class SFTPActionConfig extends PluginConfig {
     if (sshProperties == null || sshProperties.isEmpty()) {
       return properties;
     }
-
     KeyValueListParser kvParser = new KeyValueListParser("\\s*,\\s*", ":");
     for (KeyValue<String, String> keyVal : kvParser.parse(sshProperties)) {
       String key = keyVal.getKey();
