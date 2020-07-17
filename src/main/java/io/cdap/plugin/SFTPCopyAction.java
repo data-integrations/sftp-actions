@@ -87,6 +87,7 @@ public class SFTPCopyAction extends Action {
 
     @Description("Regex to copy only the file names that match. By default, all files will be copied.")
     @Nullable
+    @Macro
     public String fileNameRegex;
 
     @Description("Properties that will be used to configure the file destination system.")
