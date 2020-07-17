@@ -62,6 +62,7 @@ public class SFTPPutAction extends Action {
 
     @Description("Regex to copy only the file names that match. By default, all files will be copied.")
     @Nullable
+    @Macro
     public String fileNameRegex;
 
     public String getSrcPath() {
