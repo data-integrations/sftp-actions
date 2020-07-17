@@ -1,5 +1,5 @@
 /*
- * Copyright © 2017 Cask Data, Inc.
+ * Copyright © 2019 Cask Data, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,10 +18,10 @@ package io.cdap.plugin.common;
 
 import io.cdap.cdap.api.annotation.Description;
 import io.cdap.cdap.api.annotation.Macro;
+import io.cdap.cdap.api.annotation.Name;
 import io.cdap.cdap.api.dataset.lib.KeyValue;
 import io.cdap.cdap.api.plugin.PluginConfig;
-import io.cdap.plugin.common.KeyValueListParser;
-
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -37,14 +37,30 @@ public class SFTPActionConfig extends PluginConfig {
   @Description("Port on which SFTP server is running. Defaults to 22.")
   @Nullable
   @Macro
-  public String port;
+  public Integer port;
 
   @Description("Name of the user used to login to SFTP server.")
   @Macro
   public String userName;
 
-  @Description("Password used to login to SFTP server.")
+  @Description("Private Key to be used to login to SFTP Server. SSH key must be of RSA type")
   @Macro
+  @Nullable
+  public String privateKey;
+
+  @Description("Passphrase to be used with private key if passphrase was enabled when key was created. " +
+          "If PrivateKey is selected for Authentication")
+  @Macro
+  @Nullable
+  public String passphrase;
+
+  @Name("Authentication")
+  @Description("Authentication type to be used for connection")
+  public String authTypeBeingUsed;
+
+  @Description("Password used to login to SFTP server. If Password is selected for Authentication")
+  @Macro
+  @Nullable
   public String password;
 
   @Description("Properties that will be used to configure the SSH connection to the FTP server. " +
@@ -58,9 +74,7 @@ public class SFTPActionConfig extends PluginConfig {
     return host;
   }
 
-  public int getPort() {
-    return (port != null) ? Integer.parseInt(port) : 22;
-  }
+  public int getPort() { return (port != null) ? port : 22; }
 
   public String getUserName() {
     return userName;
@@ -70,6 +84,13 @@ public class SFTPActionConfig extends PluginConfig {
     return password;
   }
 
+  public byte[] getPrivateKey() { return privateKey.getBytes(StandardCharsets.UTF_8); }
+
+  public String getAuthTypeBeingUsed() { return authTypeBeingUsed; }
+
+  public byte[] getPassphrase(){
+    return passphrase == null ? new byte[0] : passphrase.getBytes(StandardCharsets.UTF_8); }
+
   public Map<String, String> getSSHProperties(){
     Map<String, String> properties = new HashMap<>();
     // Default set to no
@@ -77,7 +98,6 @@ public class SFTPActionConfig extends PluginConfig {
     if (sshProperties == null || sshProperties.isEmpty()) {
       return properties;
     }
-
     KeyValueListParser kvParser = new KeyValueListParser("\\s*,\\s*", ":");
     for (KeyValue<String, String> keyVal : kvParser.parse(sshProperties)) {
       String key = keyVal.getKey();

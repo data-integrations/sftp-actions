@@ -1,5 +1,5 @@
 /*
- * Copyright © 2017 Cask Data, Inc.
+ * Copyright © 2019 Cask Data, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,6 +20,7 @@ import io.cdap.cdap.api.annotation.Description;
 import io.cdap.cdap.api.annotation.Macro;
 import io.cdap.cdap.api.annotation.Name;
 import io.cdap.cdap.api.annotation.Plugin;
+import io.cdap.cdap.etl.api.PipelineConfigurer;
 import io.cdap.cdap.etl.api.action.Action;
 import io.cdap.cdap.etl.api.action.ActionContext;
 import io.cdap.plugin.common.SFTPActionConfig;
@@ -30,10 +31,9 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.PathFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import java.io.IOException;
 import java.io.InputStream;
 import javax.annotation.Nullable;
 
@@ -44,13 +44,20 @@ import javax.annotation.Nullable;
 @Name("SFTPPut")
 public class SFTPPutAction extends Action {
   private static final Logger LOG = LoggerFactory.getLogger(SFTPPutAction.class);
-
   private SFTPPutActionConfig config;
+  public SFTPPutAction(SFTPPutActionConfig config){
+    this.config = config;
+  }
 
+  @Override
+  public void configurePipeline(PipelineConfigurer pipelineConfigurer) {
+    super.configurePipeline(pipelineConfigurer);
+    config.validate();
+  }
   /**
    * Configurations for the SFTP put action plugin.
    */
-  public class SFTPPutActionConfig extends SFTPActionConfig {
+  public static class SFTPPutActionConfig extends SFTPActionConfig {
 
     @Description("Directory or File on the Filesystem which needs to be copied to the SFTP Server.")
     @Macro
@@ -76,6 +83,23 @@ public class SFTPPutAction extends Action {
     public String getFileNameRegex() {
       return (fileNameRegex != null) ? fileNameRegex : ".*";
     }
+
+    public SFTPPutActionConfig(String host, int port, String userName, String password,
+        String sshProperties, String srcPath, String destDirectory, String authType){
+      this.host = host;
+      this.port = port;
+      this.userName = userName;
+      this.password = password;
+      this.sshProperties = sshProperties;
+      this.srcPath = srcPath;
+      this.destDirectory = destDirectory;
+      this.authTypeBeingUsed = authType;
+    }
+
+    public void validate() throws IllegalArgumentException {
+      // Check for required parameters
+      // Check for required params for each action
+    }
   }
 
   @Override
@@ -85,33 +109,41 @@ public class SFTPPutAction extends Action {
     if (!fileSystem.exists(source)) {
       throw new RuntimeException(String.format("Source Path doesn't exist at %s", source));
     }
-
-    try (SFTPConnector sftp = new SFTPConnector(config.getHost(), config.getPort(), config.getUserName(),
-                                                config.getPassword(), config.getSSHProperties())) {
-      ChannelSftp channel = sftp.getSftpChannel();
-
-      try {
-        channel.mkdir(config.getDestDirectory());
-      } catch (SftpException ex) {
-        // Suppress since the directory might already exist.
+    if (config.getAuthTypeBeingUsed().equals("privatekey-select")) {
+      try (SFTPConnector sftp = new SFTPConnector(config.getHost(), config.getPort(), config.getUserName(),
+              config .getPrivateKey(), config.getPassphrase(), config.getSSHProperties())) {
+        sftpPutLogic(fileSystem, source, sftp);
+      } catch (Exception e){
+        LOG.error(String.valueOf(e));
       }
+    } else {
+      try (SFTPConnector sftp = new SFTPConnector(config.getHost(), config.getPort(), config.getUserName(),
+              config.getPassword(), config.getSSHProperties())) {
+        sftpPutLogic(fileSystem, source, sftp);
+      } catch (Exception e){
+        LOG.error(String.valueOf(e));
+      }
+    }
+  }
 
-      channel.cd(config.getDestDirectory());
-
-      // Filter out only the files to copy
-      FileStatus[] filesToCopy = fileSystem.listStatus(source, new PathFilter() {
-        @Override
-        public boolean accept(Path path) {
-          String fileName = path.getName();
-          return fileName.matches(config.getFileNameRegex());
-        }
-      });
-
-      for (FileStatus file : filesToCopy) {
-        Path filePath = file.getPath();
-        try (InputStream inputStream = fileSystem.open(filePath)) {
-          channel.put(inputStream, filePath.getName());
-        }
+  private void sftpPutLogic(FileSystem fileSystem, Path source, SFTPConnector sftp)
+      throws SftpException, IOException {
+    ChannelSftp channel = sftp.getSftpChannel();
+    try {
+      channel.mkdir(config.getDestDirectory());
+    } catch (SftpException ex) {
+      // Suppress since the directory might already exist.
+    }
+    channel.cd(config.getDestDirectory());
+    // Filter out only the files to copy
+    FileStatus[] filesToCopy = fileSystem.listStatus(source, path -> {
+      String fileName = path.getName();
+      return fileName.matches(config.getFileNameRegex());
+    });
+    for (FileStatus file : filesToCopy) {
+      Path filePath = file.getPath();
+      try (InputStream inputStream = fileSystem.open(filePath)) {
+        channel.put(inputStream, filePath.getName());
       }
     }
   }

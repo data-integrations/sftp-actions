@@ -1,0 +1,138 @@
+{
+  "metadata": {
+    "spec-version": "1.4"
+  },
+  "configuration-groups": [
+    {
+      "label": "Bastion Host Properties",
+      "properties": [
+        {
+          "widget-type": "textbox",
+          "label": "Bastion Hostname",
+          "name": "hostBastion"
+        },
+        {
+          "widget-type": "textbox",
+          "label": "Port",
+          "name": "port"
+        },
+        {
+          "widget-type": "textbox",
+          "label": "Bastion User Name",
+          "name": "userNameBastion"
+        },
+        {
+          "widget-type": "textarea",
+          "label": "PrivateKey",
+          "name": "privateKey"
+        },
+        {
+          "widget-type": "password",
+          "label": "PrivateKey Passphrase",
+          "name": "passphrase"
+        },
+    {
+      "label": "Compression Flag",
+      "name": "compressionFlag",
+      "widget-type": "radio-group",
+      "widget-attributes": {
+        "layout": "inline",
+        "default": "compression-on",
+        "options": [
+          {
+            "id": "compression-on",
+            "label": "Compression On"
+          },
+          {
+            "id": "compression-off",
+            "label": "Compression Off"
+          }
+        ]
+      }
+    },
+    {
+      "label": "Verbose Flag",
+      "name": "verboseFlag",
+      "widget-type": "radio-group",
+      "widget-attributes": {
+        "layout": "inline",
+        "default": "verbose-on",
+        "options": [
+          {
+            "id": "verbose-on",
+            "label": "Verbose On"
+          },
+          {
+            "id": "verbose-off",
+            "label": "Verbose Off"
+          }
+        ]
+      }
+    },
+    {
+      "label": "Directory Flag",
+      "name": "directoryFlag",
+      "widget-type": "radio-group",
+      "widget-attributes": {
+        "layout": "inline",
+        "default": "directory-off",
+        "options": [
+          {
+            "id": "directory-on",
+            "label": "Directory On"
+          },
+          {
+            "id": "directory-off",
+            "label": "Directory Off"
+          }
+        ]
+      }
+    }
+      ]
+    },
+    {
+      "label": "Remote Host A Properties",
+      "properties": [
+        {
+          "widget-type": "textbox",
+          "label": "Host A Hostname",
+          "name": "hostA"
+        },
+        {
+          "widget-type": "textbox",
+          "label": "Host A User Name",
+          "name": "userNameA"
+        },
+        {
+          "widget-type": "textbox",
+          "label": "Source Path",
+          "name": "sourcePath"
+        }
+      ]
+    },
+    {
+      "label": "Remote Host B Properties",
+      "properties": [
+        {
+          "widget-type": "textbox",
+          "label": "Host B Hostname",
+          "name": "hostB"
+        },
+        {
+          "widget-type": "textbox",
+          "label": "Host B User Name",
+          "name": "userNameB"
+        },
+        {
+          "widget-type": "textbox",
+          "label": "Destination Path",
+          "name": "destPath"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+  ],
+  "filters": [
+  ]
+}
