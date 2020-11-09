@@ -1,5 +1,5 @@
 /*
- * Copyright © 2017 Cask Data, Inc.
+ * Copyright © 2020 Cask Data, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -34,6 +34,7 @@ public class SFTPConnector implements AutoCloseable {
   private final Session session;
   private final Channel channel;
 
+  //Connector Object to be used for Auth with Password
   public SFTPConnector(String host, int port, String userName, String password, Map<String, String> sessionProperties)
     throws Exception {
     JSch jsch = new JSch();
@@ -46,7 +47,23 @@ public class SFTPConnector implements AutoCloseable {
     session.setConfig(properties);
     LOG.info("Connecting to Host: {}, Port: {}, with User: {}", host, port, userName);
     session.connect(30000);
-    channel = session.openChannel("sftp");
+    channel = session.openChannel(SFTPConstants.SFTP);
+    channel.connect();
+  }
+
+  // Connector Object to be used for Auth with SSH PrivateKey.
+  public SFTPConnector(String host, int port, String userName, byte[] privateKey,
+                       byte[] passphrase, Map<String, String> sessionProperties) throws Exception {
+    JSch jsch = new JSch();
+    jsch.addIdentity("key", privateKey, null, passphrase);
+    this.session = jsch.getSession(userName, host, port);
+    LOG.info("Properties {}", sessionProperties);
+    Properties properties = new Properties();
+    properties.putAll(sessionProperties);
+    session.setConfig(properties);
+    LOG.info("Connecting to Host: {}, Port: {}, with User: {}", host, port, userName);
+    session.connect(30000);
+    channel = session.openChannel(SFTPConstants.SFTP);
     channel.connect();
   }
 

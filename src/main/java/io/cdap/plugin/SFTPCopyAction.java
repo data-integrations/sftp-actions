@@ -1,5 +1,5 @@
 /*
- * Copyright © 2017 Cask Data, Inc.
+ * Copyright © 2020 Cask Data, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,6 +16,7 @@
 
 package io.cdap.plugin;
 
+import com.jcraft.jsch.SftpException;
 import io.cdap.cdap.api.annotation.Description;
 import io.cdap.cdap.api.annotation.Macro;
 import io.cdap.cdap.api.annotation.Name;
@@ -30,6 +31,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.io.ByteStreams;
 import com.jcraft.jsch.ChannelSftp;
+import io.cdap.plugin.common.SFTPConstants;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -129,65 +131,74 @@ public class SFTPCopyAction extends Action {
   @Override
   public void run(ActionContext context) throws Exception {
     Path destination = new Path(config.getDestDirectory());
-
     Configuration conf = new Configuration();
     Map<String, String> properties = config.getFileSystemProperties();
     for (Map.Entry<String, String> entry : properties.entrySet()) {
       conf.set(entry.getKey(), entry.getValue());
     }
-
     FileSystem fileSystem = FileSystem.get(conf);
-
     destination = fileSystem.makeQualified(destination);
     if (!fileSystem.exists(destination)) {
       fileSystem.mkdirs(destination);
     }
-
-    try (SFTPConnector SFTPConnector = new SFTPConnector(config.getHost(), config.getPort(), config.getUserName(),
-                                                      config.getPassword(), config.getSSHProperties())) {
-      ChannelSftp channelSftp = SFTPConnector.getSftpChannel();
-
-      Vector files = channelSftp.ls(config.getSrcDirectory());
-
-      List<String> filesCopied = new ArrayList<>();
-      for (int index = 0; index < files.size(); index++) {
-        Object obj = files.elementAt(index);
-        if (!(obj instanceof ChannelSftp.LsEntry)) {
-          continue;
-        }
-        ChannelSftp.LsEntry entry = (ChannelSftp.LsEntry) obj;
-        if (".".equals(entry.getFilename()) || "..".equals(entry.getFilename())) {
-          // ignore "." and ".." files
-          continue;
-        }
-
-        // Ignore files that don't match the given file regex
-        if (!Strings.isNullOrEmpty(config.fileNameRegex)) {
-          String fileName = entry.getFilename();
-          if (!fileName.matches(config.fileNameRegex)) {
-            LOG.debug("Skipping file {} since it doesn't match the regex.", fileName);
-            continue;
-          }
-        }
-
-        LOG.info("Downloading file {}", entry.getFilename());
-        String completeFileName = config.getSrcDirectory() + "/" + entry.getFilename();
-
-        if (config.getExtractZipFiles() && entry.getFilename().endsWith(".zip")) {
-          copyJschZip(channelSftp.get(completeFileName), fileSystem, destination);
-        } else {
-          Path destinationPath = fileSystem.makeQualified(new Path(destination, entry.getFilename()));
-          LOG.debug("Downloading {} to {}", entry.getFilename(), destinationPath.toString());
-          try (OutputStream output = fileSystem.create(destinationPath)) {
-            InputStream is = channelSftp.get(completeFileName);
-            ByteStreams.copy(is, output);
-          }
-        }
-        filesCopied.add(completeFileName);
+    SFTPConnector sftpConnector = null;
+    try {
+      if (config.getAuthTypeBeingUsed().equals(SFTPConstants.PRIVATE_KEY_SELECT)) {
+        sftpConnector = new SFTPConnector(config.getHost(), config.getPort(),
+          config.getUserName(), config.getPrivateKey(), config.getPassphrase(), config.getSSHProperties());
+      } else {
+        sftpConnector = new SFTPConnector(config.getHost(), config.getPort(),
+          config.getUserName(), config.getPassword(), config.getSSHProperties());
       }
-      context.getArguments().set(config.getVariableNameHoldingFileList(), Joiner.on(",").join(filesCopied));
-      LOG.info("Variables copied to {}.", Joiner.on(",").join(filesCopied));
+      copySFTPFiles(fileSystem, destination, sftpConnector, context);
+    } catch(Exception e) {
+      throw new RuntimeException(String.format("Error occurred while connecting to SFTP Server %s", e.getMessage(), e));
+    } finally {
+        if (sftpConnector != null) {
+          sftpConnector.close();
+        }
     }
+  }
+
+  private void copySFTPFiles(FileSystem fileSystem, Path destination, SFTPConnector SFTPConnector,
+                            ActionContext context) throws SftpException, IOException {
+    ChannelSftp channelSftp = SFTPConnector.getSftpChannel();
+    Vector files = channelSftp.ls(config.getSrcDirectory());
+    List<String> filesCopied = new ArrayList<>();
+    for (int index = 0; index < files.size(); index++) {
+      Object obj = files.elementAt(index);
+      if (!(obj instanceof ChannelSftp.LsEntry)) {
+        continue;
+      }
+      ChannelSftp.LsEntry entry = (ChannelSftp.LsEntry) obj;
+      if (".".equals(entry.getFilename()) || "..".equals(entry.getFilename())) {
+        // ignore "." and ".." files
+        continue;
+      }
+      // Ignore files that don't match the given file regex
+      if (!Strings.isNullOrEmpty(config.fileNameRegex)) {
+        String fileName = entry.getFilename();
+        if (!fileName.matches(config.fileNameRegex)) {
+          LOG.debug("Skipping file {} since it doesn't match the regex.", fileName);
+          continue;
+        }
+      }
+      LOG.info("Downloading file {}", entry.getFilename());
+      String completeFileName = config.getSrcDirectory() + "/" + entry.getFilename();
+      if (config.getExtractZipFiles() && entry.getFilename().endsWith(".zip")) {
+        copyJschZip(channelSftp.get(completeFileName), fileSystem, destination);
+      } else {
+        Path destinationPath = fileSystem.makeQualified(new Path(destination, entry.getFilename()));
+        LOG.debug("Downloading {} to {}", entry.getFilename(), destinationPath.toString());
+        try (OutputStream output = fileSystem.create(destinationPath)) {
+          InputStream is = channelSftp.get(completeFileName);
+          ByteStreams.copy(is, output);
+        }
+      }
+      filesCopied.add(completeFileName);
+    }
+    context.getArguments().set(config.getVariableNameHoldingFileList(), Joiner.on(",").join(filesCopied));
+    LOG.info("Variables copied to {}.", Joiner.on(",").join(filesCopied));
   }
 
   private void copyJschZip(InputStream is, FileSystem fs, Path destination) throws IOException {

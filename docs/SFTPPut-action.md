@@ -29,11 +29,14 @@ Plugin Configuration
 | :------------ | :------: | :----- | :---------- |
 | **Host** | **Y** | N/A | Specifies the host name of the SFTP server.|
 | **Port** | **N** | 22 | Specifies the port on which SFTP server is running.|
-| **User** | **Y** | N/A | Specifies the name of the user which will be used to connect to the SFTP server.|
-| **Password** | **Y** | N/A | Specifies the password of the user.|
-| **Source Path** | **Y** | N/A | Path of file or directory on the file system which is to be copied.|
-| **Destination Directory** | **Y** | N/A | Destination directory on the FTP Server, where files need to be copied. If directory does not exist, it will lbe created.|
-| **File Name Regex** | **N** | .* | Regex to choose only the files that are of interest. All files will be copied by default.|
+| **User Name** | **Y** | N/A | Specifies the name of the user which will be used to connect to the SFTP server.|
+| **Authentication** | **Y** | **PrivateKey** | Specifies the type of Authentication that will be used to connect to the SFTP Server.|
+| **Private Key** | **N** | N/A | Private RSA Key to be used to connect to the SFTP Server. This key is recommended to be stored in the Secure Key Store, and macro called into the Configuration. Must be a RSA key starting with -----BEGIN RSA PRIVATE KEY-----|
+| **Private Key Passphrase**| **N** | N/A | Passphrase to be used with RSA Private Key if a Passphrase was specified when key was generated.|
+| **Password** | **N** | N/A | Specifies the password of the user. Only Required if Private Key is not being used.|
+| **Files to be deleted** | **Y** | ${sftp.copied.file.names} | Comma separated list of files on the SFTP server to be deleted. Default value for this field is a Macro which will be substituted by SFTP copy plugin when this plugin is used with it. |
+| **Destination Directory** | **Y** | N/A | Destination directory on the file system, where files need to be copied. If directory does not exist, it will lbe created.|
+| **Continue execution on error** | **N** | false | Boolean flag to determine whether to proceed with next files in case there is a failure in deletion of any particular file. |
 | **Properties for SSH** | **N** | N/A | Specifies the properties that are used to configure SSH connection to the FTP server. For example to enable verbose logging add property 'LogLevel' with value 'VERBOSE'. To enable host key checking set 'StrictHostKeyChecking' to 'yes'. SSH can be configured with the properties described here 'https://linux.die.net/man/5/ssh_config'. |
 
 
