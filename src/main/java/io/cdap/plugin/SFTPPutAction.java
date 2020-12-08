@@ -1,5 +1,5 @@
 /*
- * Copyright © 2017 Cask Data, Inc.
+ * Copyright © 2020 Cask Data, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,6 +16,7 @@
 
 package io.cdap.plugin;
 
+import com.jcraft.jsch.SftpATTRS;
 import io.cdap.cdap.api.annotation.Description;
 import io.cdap.cdap.api.annotation.Macro;
 import io.cdap.cdap.api.annotation.Name;
@@ -26,11 +27,12 @@ import io.cdap.plugin.common.SFTPActionConfig;
 import io.cdap.plugin.common.SFTPConnector;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.SftpException;
+import io.cdap.plugin.common.SFTPConstants;
+import java.io.IOException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.PathFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,33 +87,51 @@ public class SFTPPutAction extends Action {
     if (!fileSystem.exists(source)) {
       throw new RuntimeException(String.format("Source Path doesn't exist at %s", source));
     }
-
-    try (SFTPConnector sftp = new SFTPConnector(config.getHost(), config.getPort(), config.getUserName(),
-                                                config.getPassword(), config.getSSHProperties())) {
-      ChannelSftp channel = sftp.getSftpChannel();
-
-      try {
-        channel.mkdir(config.getDestDirectory());
-      } catch (SftpException ex) {
-        // Suppress since the directory might already exist.
+    SFTPConnector sftpConnector = null;
+    try {
+      if (config.getAuthTypeBeingUsed().equals(SFTPConstants.PRIVATE_KEY_SELECT)) {
+        sftpConnector = new SFTPConnector(config.getHost(), config.getPort(),
+          config.getUserName(), config.getPrivateKey(), config.getPassphrase(), config.getSSHProperties());
+      } else {
+        sftpConnector = new SFTPConnector(config.getHost(), config.getPort(),
+          config.getUserName(), config.getPassword(), config.getSSHProperties());
       }
+      putSFTPFiles(fileSystem, source, sftpConnector);
+    } catch (Exception e) {
+      throw new RuntimeException(String.format("Error occurred while connecting to SFTP Server %s %s", e.getMessage(), e));
+    } finally {
+      if (sftpConnector != null) {
+        sftpConnector.close();
+      }
+    }
+  }
 
-      channel.cd(config.getDestDirectory());
+  private void putSFTPFiles(FileSystem fileSystem, Path source, SFTPConnector sftp)
+    throws SftpException, IOException {
+    ChannelSftp channel = sftp.getSftpChannel();
+    SftpATTRS attrs = null;
 
-      // Filter out only the files to copy
-      FileStatus[] filesToCopy = fileSystem.listStatus(source, new PathFilter() {
-        @Override
-        public boolean accept(Path path) {
-          String fileName = path.getName();
-          return fileName.matches(config.getFileNameRegex());
-        }
-      });
-
-      for (FileStatus file : filesToCopy) {
-        Path filePath = file.getPath();
-        try (InputStream inputStream = fileSystem.open(filePath)) {
-          channel.put(inputStream, filePath.getName());
-        }
+    try {
+      attrs = channel.stat(config.getDestDirectory());
+    } catch (Exception e) {
+      LOG.debug(String.format("Directory does not exist %s %s", e.getMessage(), e));
+    }
+    if (attrs != null) {
+      LOG.info(String.format("Directory exist %s", attrs.isDir()));
+    } else {
+      LOG.info(String.format("Creating Directory %s", config.getDestDirectory()));
+      channel.mkdir(config.getDestDirectory());
+    }
+    channel.cd(config.getDestDirectory());
+    // Filter out only the files to copy
+    FileStatus[] filesToCopy = fileSystem.listStatus(source, path -> {
+      String fileName = path.getName();
+      return fileName.matches(config.getFileNameRegex());
+    });
+    for (FileStatus file : filesToCopy) {
+      Path filePath = file.getPath();
+      try (InputStream inputStream = fileSystem.open(filePath)) {
+        channel.put(inputStream, filePath.getName());
       }
     }
   }

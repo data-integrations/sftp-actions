@@ -1,5 +1,5 @@
 /*
- * Copyright © 2017 Cask Data, Inc.
+ * Copyright © 2020 Cask Data, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,14 +18,14 @@ package io.cdap.plugin.common;
 
 import io.cdap.cdap.api.annotation.Description;
 import io.cdap.cdap.api.annotation.Macro;
+import io.cdap.cdap.api.annotation.Name;
 import io.cdap.cdap.api.dataset.lib.KeyValue;
 import io.cdap.cdap.api.plugin.PluginConfig;
-import io.cdap.plugin.common.KeyValueListParser;
-
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
-
+import com.google.common.base.Strings;
 /**
  * Common configurations for the FTP Action plugins.
  */
@@ -43,8 +43,26 @@ public class SFTPActionConfig extends PluginConfig {
   @Macro
   public String userName;
 
+  @Description("Private Key to be used to login to SFTP Server. SSH key must be of RSA type")
+  @Macro
+  @Nullable
+  public String privateKey;
+
+  @Description("Passphrase to be used with private key if passphrase was enabled when key was created. " +
+    "If PrivateKey is selected for Authentication")
+  @Macro
+  @Nullable
+  public String passphrase;
+
+  @Name("Authentication")
+  @Description("Authentication type to be used for connection")
+  @Nullable
+  @Macro
+  public String authTypeBeingUsed;
+
   @Description("Password used to login to SFTP server.")
   @Macro
+  @Nullable
   public String password;
 
   @Description("Properties that will be used to configure the SSH connection to the FTP server. " +
@@ -68,6 +86,18 @@ public class SFTPActionConfig extends PluginConfig {
 
   public String getPassword() {
     return password;
+  }
+
+  public byte[] getPrivateKey() {
+    return privateKey.getBytes(StandardCharsets.UTF_8);
+  }
+
+  public String getAuthTypeBeingUsed() {
+    return authTypeBeingUsed;
+  }
+
+  public byte[] getPassphrase() {
+    return Strings.isNullOrEmpty(passphrase) ? new byte[0] : passphrase.getBytes(StandardCharsets.UTF_8);
   }
 
   public Map<String, String> getSSHProperties(){
