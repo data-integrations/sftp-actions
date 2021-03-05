@@ -20,7 +20,7 @@
   <groupId>io.cdap.plugin</groupId>
   <artifactId>sftp-actions</artifactId>
   <packaging>jar</packaging>
-  <version>1.5.0-SNAPSHOT</version>
+  <version>1.6.0-SNAPSHOT</version>
   <name>SFTP Actions</name>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
