@@ -136,8 +136,7 @@ public class SFTPCopyAction extends Action {
     for (Map.Entry<String, String> entry : properties.entrySet()) {
       conf.set(entry.getKey(), entry.getValue());
     }
-    FileSystem fileSystem = FileSystem.get(conf);
-    destination = fileSystem.makeQualified(destination);
+    FileSystem fileSystem = destination.getFileSystem(conf);
     if (!fileSystem.exists(destination)) {
       fileSystem.mkdirs(destination);
     }
