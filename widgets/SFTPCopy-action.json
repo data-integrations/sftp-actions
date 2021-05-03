@@ -97,6 +97,22 @@
             "key-placeholder": "key",
             "value-placeholder": "value"
           }
+        },
+        {
+          "widget-type": "toggle",
+          "name": "extractZipFiles",
+          "label": "Extract Zip Files",
+          "widget-attributes": {
+            "default": "false",
+            "on": {
+              "value": "true",
+              "label": "True"
+            },
+            "off": {
+              "value": "false",
+              "label": "False"
+            }
+          }
         }
       ]
     }
