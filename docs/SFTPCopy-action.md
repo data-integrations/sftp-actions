@@ -20,14 +20,14 @@ configurations can be specified using `Properties for SSH` section.
 
 Directory on the SFTP server which needs to be copied can be specified using `Source directory` property. The specified
 directory should exist and absolute path to the directory must be provided. If directory is empty then execution will
-continue without any error. `Destination directory` is the absolute path of the directory on HDFS where the files will be copied.
-If destination directory does not exists, then it will be created first. If file with the same name already exists in
-the destination directory, it will be overwritten.
+continue without any error. `Destination directory` is the absolute path of the directory on any Hadoop-compatible FS
+(determined by the scheme of the path) where the files will be copied. If destination directory does not exists, then it
+will be created first. If file with the same name already exists in the destination directory, it will be overwritten.
 
-Files from the SFTP server can optionally be uncompressed while copying to HDFS. Currently uncompress option is only supported
-for the zip files.
+Files from the SFTP server can optionally be uncompressed while copying to HDFS. Currently, the uncompress option only
+supports zip files.
 
-Typically SFTP server acts as a temporary storage for the files and once processed the files can be deleted. Comma
+Typically, SFTP server acts as a temporary storage for the files and once processed the files can be deleted. Comma
 separated list of file names on the SFTP server which were copied to HDFS during the current run, is stored in a
 variable named `sftp.copied.file.names`. SFTP Delete action can be configured to run at the end of the pipeline,
 which uses this variable to determine the files to be deleted from SFTP server.
@@ -45,7 +45,7 @@ Plugin Configuration
 | **Private Key Passphrase** | **N** | N/A | Passphrase to be used with RSA Private Key if a Passphrase was specified when key was generated.|
 | **Password** | **N** | N/A | Specifies the password of the user. Only Required if Private Key is not being used.|
 | **Source Directory** | **Y** | N/A | Absolute path of the directory on the SFTP server which is to be copied. If the directory is empty, the execution of the plugin will be no-op.|
-| **Destination Directory** | **Y** | N/A | Destination directory on the file system, where files need to be copied. If directory does not exist, it will lbe created.|
+| **Destination Directory** | **Y** | N/A | Destination directory on the file system, where files need to be copied. If directory does not exist, it will be created.|
 | **Uncompress** | **N** | true | Boolean flag to determine whether to uncompress the `.zip` files while copying.|
 | **File Name Regex** | **N** | .* | Regex to choose only the files that are of interest. All files will be copied by default.|
 | **Variable name to hold list of copied file names** | **N** | sftp.copied.file.names | Name of the variable which holds comma separated list of file names on the SFTP server which were copied during this run of the plugin. Usually this variable is used as Macro in the SFTP Delete action to delete the files from SFTP server once their processing is successful. |
