@@ -27,7 +27,7 @@
     <cdap.version>6.2.0</cdap.version>
     <hydrator.version>2.4.0</hydrator.version>
     <jsch.version>0.1.53</jsch.version>
-    <hadoop.version>2.3.0</hadoop.version>
+    <hadoop.version>2.10.1</hadoop.version>
     <guava.version>19.0</guava.version>
 
     <!-- properties for script build step that creates the config files for the artifacts -->
