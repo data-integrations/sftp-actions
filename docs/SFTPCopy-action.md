@@ -1,10 +1,6 @@
 SFTP Copy
 =========
 
-<a href="https://cdap-users.herokuapp.com/"><img alt="Join CDAP community" src="https://cdap-users.herokuapp.com/badge.svg?t=sftp-actions"/></a>
-[![Build Status](https://travis-ci.org/hydrator/sftp-actions.svg?branch=develop)](https://travis-ci.org/hydrator/sftp-actions) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) <img src="https://cdap-users.herokuapp.com/assets/cdap-action.svg"/>
-
-
 SFTP copy allows copying of the files from the specified directory on SFTP servers and write them to HDFS as the destination.
 The files that are copied can be optionally uncompressed before storing. The files are copied directly to HDFS without needing any additional staging area.
 

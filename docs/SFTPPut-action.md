@@ -1,11 +1,7 @@
 SFTP Put
 ========
 
-<a href="https://cdap-users.herokuapp.com/"><img alt="Join CDAP community" src="https://cdap-users.herokuapp.com/badge.svg?t=sftp-actions"/></a>
-[![Build Status](https://travis-ci.org/hydrator/sftp-actions.svg?branch=develop)](https://travis-ci.org/hydrator/sftp-actions) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) <img src="https://cdap-users.herokuapp.com/assets/cdap-action.svg"/>
-
-
-SFTP put allows uploading of file(s) from filesystem (local/HDFS) to FTP server. File Regex can also be used
+SFTP put allows uploading of file(s) from a hadoop-compatible filesystem (gcs/local/HDFS) to FTP server. File Regex can also be used
 to filter only the files that are of interest.
 
 
@@ -13,14 +9,14 @@ Usage Notes
 -----------
 In order perform SFTP Put, we require host and port on which the SFTP server is running. SFTP implements secure file
 transfer over SSH. Typically port number 22 is used for SFTP(which is also default port for SSH). We also require valid
-credentials in the form of user name and password. Please make sure that you are able to SSH to the SFTP server using
+credentials in the form of username and password. Please make sure that you are able to SSH to the SFTP server using
 specified user and password. SSH connection to SFTP server can be customized by providing additional configurations
 such as enable host key checking by setting configuration property 'StrictHostKeyChecking' to 'yes'. These additional
 configurations can be specified using `Properties for SSH` section.
 
-Directory/File on the Filesystem which needs to be copied can be specified using `Source Path` property. The specified
+Directory/File on the hadoop-compatible filesystem which needs to be copied can be specified using `Source Path` property. The specified
 path should exist. `Destination directory` is the absolute path of the directory on the FTP Server where the files
-will be copied. If destination directory does not exists, then it will be created first.
+will be copied. If destination directory does not exist, then it will be created first.
 
 Plugin Configuration
 --------------------
@@ -38,6 +34,11 @@ Plugin Configuration
 | **Destination Directory** | **Y** | N/A | Destination directory on the file system, where files need to be copied. If directory does not exist, it will lbe created.|
 | **Continue execution on error** | **N** | false | Boolean flag to determine whether to proceed with next files in case there is a failure in deletion of any particular file. |
 | **Properties for SSH** | **N** | N/A | Specifies the properties that are used to configure SSH connection to the FTP server. For example to enable verbose logging add property 'LogLevel' with value 'VERBOSE'. To enable host key checking set 'StrictHostKeyChecking' to 'yes'. SSH can be configured with the properties described here 'https://linux.die.net/man/5/ssh_config'. |
+
+# Example Directory Configuration Using GCS
+**Source Directory:** gs://my-bucket/my-file.csv
+
+**Destination Directory:** /my/sftp/directory
 
 
 Build
