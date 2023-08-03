@@ -1,13 +1,8 @@
 SFTP Put
 ========
 
-<a href="https://cdap-users.herokuapp.com/"><img alt="Join CDAP community" src="https://cdap-users.herokuapp.com/badge.svg?t=sftp-actions"/></a>
-[![Build Status](https://travis-ci.org/hydrator/sftp-actions.svg?branch=develop)](https://travis-ci.org/hydrator/sftp-actions) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) <img src="https://cdap-users.herokuapp.com/assets/cdap-action.svg"/>
-
-
-SFTP put allows uploading of file(s) from filesystem (local/HDFS) to FTP server. File Regex can also be used
+SFTP put allows uploading of file(s) from a hadoop-compatible filesystem to FTP server. File Regex can also be used
 to filter only the files that are of interest.
-
 
 Usage Notes
 -----------
@@ -18,26 +13,33 @@ specified user and password. SSH connection to SFTP server can be customized by 
 such as enable host key checking by setting configuration property 'StrictHostKeyChecking' to 'yes'. These additional
 configurations can be specified using `Properties for SSH` section.
 
-Directory/File on the Filesystem which needs to be copied can be specified using `Source Path` property. The specified
+Directory/File on the hadoop-compatible filesystem which needs to be copied can be specified using `Source Path` property. The specified
 path should exist. `Destination directory` is the absolute path of the directory on the FTP Server where the files
-will be copied. If destination directory does not exists, then it will be created first.
+will be copied. If destination directory does not exist, then it will be created first.
+
+## Example Directory Configuration Using GCS
+**Source Directory:** gs://my-bucket/my-file.csv 
+
+**Destination Directory:** /my/sftp/directory
 
 Plugin Configuration
 --------------------
 
-| Configuration | Required | Default | Description |
-| :------------ | :------: | :----- | :---------- |
-| **Host** | **Y** | N/A | Specifies the host name of the SFTP server.|
-| **Port** | **N** | 22 | Specifies the port on which SFTP server is running.|
-| **User Name** | **Y** | N/A | Specifies the name of the user which will be used to connect to the SFTP server.|
-| **Authentication** | **Y** | **PrivateKey** | Specifies the type of Authentication that will be used to connect to the SFTP Server.|
-| **Private Key** | **N** | N/A | Private RSA Key to be used to connect to the SFTP Server. This key is recommended to be stored in the Secure Key Store, and macro called into the Configuration. Must be a RSA key starting with -----BEGIN RSA PRIVATE KEY-----|
-| **Private Key Passphrase**| **N** | N/A | Passphrase to be used with RSA Private Key if a Passphrase was specified when key was generated.|
-| **Password** | **N** | N/A | Specifies the password of the user. Only Required if Private Key is not being used.|
-| **Files to be deleted** | **Y** | ${sftp.copied.file.names} | Comma separated list of files on the SFTP server to be deleted. Default value for this field is a Macro which will be substituted by SFTP copy plugin when this plugin is used with it. |
-| **Destination Directory** | **Y** | N/A | Destination directory on the file system, where files need to be copied. If directory does not exist, it will lbe created.|
-| **Continue execution on error** | **N** | false | Boolean flag to determine whether to proceed with next files in case there is a failure in deletion of any particular file. |
+| Configuration | Required | Default | Description                                                                                                                                                                                                                                                                                                                                    |
+| :------------ | :------: | :----- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Host** | **Y** | N/A | Specifies the host name of the SFTP server.                                                                                                                                                                                                                                                                                                    |
+| **Port** | **N** | 22 | Specifies the port on which SFTP server is running.                                                                                                                                                                                                                                                                                            |
+| **User Name** | **Y** | N/A | Specifies the name of the user which will be used to connect to the SFTP server.                                                                                                                                                                                                                                                               |
+| **Authentication** | **Y** | **PrivateKey** | Specifies the type of Authentication that will be used to connect to the SFTP Server.                                                                                                                                                                                                                                                          |
+| **Private Key** | **N** | N/A | Private RSA Key to be used to connect to the SFTP Server. This key is recommended to be stored in the Secure Key Store, and macro called into the Configuration. Must be a RSA key starting with -----BEGIN RSA PRIVATE KEY-----                                                                                                               |
+| **Private Key Passphrase**| **N** | N/A | Passphrase to be used with RSA Private Key if a Passphrase was specified when key was generated.                                                                                                                                                                                                                                               |
+| **Password** | **N** | N/A | Specifies the password of the user. Only Required if Private Key is not being used.                                                                                                                                                                                                                                                            |
+| **Files to be deleted** | **Y** | ${sftp.copied.file.names} | Comma separated list of files on the SFTP server to be deleted. Default value for this field is a Macro which will be substituted by SFTP copy plugin when this plugin is used with it.                                                                                                                                                        |
+| **Destination Directory** | **Y** | N/A | Destination directory on the hadoop-compatible file system, where files need to be copied. If directory does not exist, it will lbe created.                                                                                                                                                                                                   |
+| **Continue execution on error** | **N** | false | Boolean flag to determine whether to proceed with next files in case there is a failure in deletion of any particular file.                                                                                                                                                                                                                    |
 | **Properties for SSH** | **N** | N/A | Specifies the properties that are used to configure SSH connection to the FTP server. For example to enable verbose logging add property 'LogLevel' with value 'VERBOSE'. To enable host key checking set 'StrictHostKeyChecking' to 'yes'. SSH can be configured with the properties described here 'https://linux.die.net/man/5/ssh_config'. |
+
+Example 
 
 
 Build
