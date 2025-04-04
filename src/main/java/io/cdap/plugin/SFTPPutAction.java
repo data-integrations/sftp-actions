@@ -83,7 +83,8 @@ public class SFTPPutAction extends Action {
   @Override
   public void run(ActionContext context) throws Exception {
     Path source = new Path(config.getSrcPath());
-    FileSystem fileSystem = FileSystem.get(new Configuration());
+    Configuration conf = new Configuration();
+    FileSystem fileSystem = source.getFileSystem(conf);
     if (!fileSystem.exists(source)) {
       throw new RuntimeException(String.format("Source Path doesn't exist at %s", source));
     }
